@@ -1,0 +1,10 @@
+# OS FILES
+
+.DS_Store
+.idea
+
+# CLion Files
+
+CMakeLists.txt
+cmake-build-debug
+
