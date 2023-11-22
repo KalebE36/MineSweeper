@@ -13,7 +13,7 @@ struct Text {
     sf::FloatRect text_rect;
 
     Text() {
-        font.loadFromFile("../font.ttf");
+        font.loadFromFile("files/font.ttf");
         new_text.setCharacterSize(12);
         new_text.setFont(font);
         new_text.setString("Basic text");
