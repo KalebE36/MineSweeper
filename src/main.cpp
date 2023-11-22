@@ -68,9 +68,20 @@ bool welcomeWindow(int& num_rows, int& num_cols, string& user_name) {
                         max_num = 0;
                     } else {
                         if(max_num != 1) {
-                            if (event.text.unicode >= 32 && event.text.unicode < 128) {
-                                welcome_input += event.text.unicode;
-                                player_input.changeString(welcome_input + "|");
+                            if(welcome_input.getSize() >= 1) {
+                                if ((event.text.unicode >= 65) && (event.text.unicode < 123) ) {
+                                    if ((event.text.unicode < 91) || (event.text.unicode > 96)){
+                                        welcome_input += (char)tolower(event.text.unicode);
+                                        player_input.changeString(welcome_input + "|");
+                                    }
+                                }
+                            } else {
+                                if ((event.text.unicode >= 65) && (event.text.unicode < 123) ) {
+                                    if ((event.text.unicode < 91) || (event.text.unicode > 96)){
+                                        welcome_input += (char)toupper(event.text.unicode);
+                                        player_input.changeString(welcome_input + "|");
+                                    }
+                                }
                             }
                         }
                     }
@@ -94,5 +105,6 @@ int main() {
     string user_name = "";
     read_cfg(num_rows, num_cols, num_mines);
     while(welcomeWindow(num_rows, num_cols, user_name)) {}
+    cout << user_name;
     return 0;
 }
