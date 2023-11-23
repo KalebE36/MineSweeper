@@ -33,16 +33,17 @@ bool welcomeWindow(int& num_rows, int& num_cols, string& user_name) {
     sf::RenderWindow welcomeWindow(sf::VideoMode((num_cols * 32), ((num_rows*32) + 100)), "Minesweeper");
 
     /* Setting up Text placements and properties for the welcome screen */
-    Text player_input(16, "files/font.ttf", "|");
-    Text user_nameText(16,  "files/font.ttf", "Enter your name: ");
-    Text greet_mineText(20,  "files/font.ttf", "WELCOME TO MINESWEEPER!");
+    Text player_input(18, "files/font.ttf", "|");
+    Text user_nameText(20,  "files/font.ttf", "Enter your name: ");
+    Text greet_mineText(24,  "files/font.ttf", "WELCOME TO MINESWEEPER!");
     greet_mineText.new_text.setStyle(sf::Text::Underlined | sf::Text::Bold);
-    user_nameText.setText(user_nameText.new_text, ((num_cols*32)/2.0f), 250);
-    greet_mineText.setText(greet_mineText.new_text, ((num_cols*32)/2.0f), 200);
+    user_nameText.setText(user_nameText.new_text, ((num_cols*32)/2.0f), ((((num_rows*32) + 100))/2.0f) - 75 );
+    greet_mineText.setText(greet_mineText.new_text, ((num_cols*32)/2.0f), ((((num_rows*32) + 100))/2.0f) - 150);
+    player_input.new_text.setFillColor(sf::Color::Yellow);
 
     /* Key events */
     while(welcomeWindow.isOpen()) {
-        player_input.setText(player_input.new_text, ((num_cols*32)/2.0f), 300);
+        player_input.setText(player_input.new_text, ((num_cols*32)/2.0f), ((((num_rows*32) + 100))/2.0f) - 45);
         sf::Event event;
         checknum = 0;
         while(welcomeWindow.pollEvent(event)) {
@@ -61,7 +62,7 @@ bool welcomeWindow(int& num_rows, int& num_cols, string& user_name) {
                     }
                 }
             }
-            if(welcome_input.getSize() > 10) {
+            if(welcome_input.getSize() > 9) {
                 max_num = 1;
             }
             if (event.type == sf::Event::TextEntered) {
@@ -109,5 +110,6 @@ int main() {
     string user_name = "";
     read_cfg(num_rows, num_cols, num_mines);
     while(welcomeWindow(num_rows, num_cols, user_name)) {}
+
     return 0;
 }

@@ -13,6 +13,7 @@ struct Tile {
     bool is_pressed;
     int adjacent_mines;
     vector<Tile*> adjacent_tiles;
+    sf::Sprite unrevealed;
 
     /* Tile Functionality */
     Tile() {
