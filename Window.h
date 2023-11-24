@@ -11,8 +11,6 @@ class GameWindow {
 private:
     sf::RenderWindow window;
     vector<Tile> tiles;
-    bool win_lose;
-    bool one_zero;
 public:
 };
 

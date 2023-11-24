@@ -14,6 +14,7 @@ struct Tile {
     int adjacent_mines;
     vector<Tile*> adjacent_tiles;
     sf::Sprite unrevealed;
+    sf::Sprite revealed;
 
     /* Tile Functionality */
     Tile() {

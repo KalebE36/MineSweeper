@@ -8,6 +8,35 @@
 #include <SFML/Graphics.hpp>
 
 using namespace std;
+void read_cfg(int &num_rows, int &num_cols, int& num_mines);
+bool WelcomeWindow(int& num_rows, int& num_cols, string& user_name, int& close_window);
+bool GameWindow(int num_rows, int num_cols);
+
+
+
+
+
+
+int main() {
+    /* Special Variables */
+    int num_rows, num_cols, num_mines;
+    int check_num = 0;
+    string user_name = "";
+
+    /* Functions for welcome window and reading in the config */
+    read_cfg(num_rows, num_cols, num_mines);
+    while(WelcomeWindow(num_rows, num_cols, user_name, check_num)) {}
+
+    /* Check if username is valid and that the game window is able to be displayed */
+    if (check_num != 0) {
+        return 0;
+    }
+
+    /* Run the Game Window and the actual game */
+    while(GameWindow(num_rows, num_cols)) {}
+
+    return 0;
+}
 
 /* reads the data from the config file */
 void read_cfg (int &num_rows, int &num_cols, int& num_mines) {
@@ -26,7 +55,7 @@ void read_cfg (int &num_rows, int &num_cols, int& num_mines) {
 
 /* This function just makes sure that a usr inputs valid credentials and displays the welcome screen */
 /* Could probably use a class for the welcome screen */
-bool welcomeWindow(int& num_rows, int& num_cols, string& user_name) {
+bool WelcomeWindow(int& num_rows, int& num_cols, string& user_name, int& close_window) {
     int checknum = 0;
     int max_num = 0;
     sf::String welcome_input;
@@ -49,6 +78,7 @@ bool welcomeWindow(int& num_rows, int& num_cols, string& user_name) {
         while(welcomeWindow.pollEvent(event)) {
             if(event.type == sf::Event::Closed) {
                 welcomeWindow.close();
+                close_window = 1;
                 return false;
             }
             if(event.type == sf::Event::KeyPressed) {
@@ -102,14 +132,19 @@ bool welcomeWindow(int& num_rows, int& num_cols, string& user_name) {
     }
 }
 
-
-
-
-int main() {
-    int num_rows, num_cols, num_mines;
-    string user_name = "";
-    read_cfg(num_rows, num_cols, num_mines);
-    while(welcomeWindow(num_rows, num_cols, user_name)) {}
-
-    return 0;
+bool GameWindow(int num_rows, int num_cols) {
+    sf::RenderWindow gameWindow(sf::VideoMode((num_cols * 32), ((num_rows*32) + 100)), "Game Window");
+    while(gameWindow.isOpen()) {
+        sf::Event event;
+        while(gameWindow.pollEvent(event)) {
+            if (event.type == sf::Event::Closed) {
+                gameWindow.close();
+                return false;
+            }
+        }
+    }
+    gameWindow.clear();
+    gameWindow.display();
 }
+
+
