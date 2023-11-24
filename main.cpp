@@ -3,6 +3,7 @@
 #include <string>
 #include "Text.h"
 #include "TextureManager.h"
+#include "Sprite.h"
 #include "Window.h"
 #include "Tile.h"
 #include <SFML/Graphics.hpp>
@@ -20,15 +21,15 @@ bool GameWindow(int num_rows, int num_cols);
 int main() {
     /* Special Variables */
     int num_rows, num_cols, num_mines;
-    int check_num = 0;
+    int close_window = 0;
     string user_name = "";
 
     /* Functions for welcome window and reading in the config */
     read_cfg(num_rows, num_cols, num_mines);
-    while(WelcomeWindow(num_rows, num_cols, user_name, check_num)) {}
+    while(WelcomeWindow(num_rows, num_cols, user_name, close_window)) {}
 
     /* Check if username is valid and that the game window is able to be displayed */
-    if (check_num != 0) {
+    if (close_window != 0) {
         return 0;
     }
 
@@ -59,7 +60,7 @@ bool WelcomeWindow(int& num_rows, int& num_cols, string& user_name, int& close_w
     int checknum = 0;
     int max_num = 0;
     sf::String welcome_input;
-    sf::RenderWindow welcomeWindow(sf::VideoMode((num_cols * 32), ((num_rows*32) + 100)), "Minesweeper");
+    sf::RenderWindow welcomeWindow(sf::VideoMode((num_cols * 32), ((num_rows*32) + 100)), "Minesweeper", sf::Style::Close);
 
     /* Setting up Text placements and properties for the welcome screen */
     Text player_input(18, "files/font.ttf", "|");
@@ -133,7 +134,33 @@ bool WelcomeWindow(int& num_rows, int& num_cols, string& user_name, int& close_w
 }
 
 bool GameWindow(int num_rows, int num_cols) {
-    sf::RenderWindow gameWindow(sf::VideoMode((num_cols * 32), ((num_rows*32) + 100)), "Game Window");
+    sf::RenderWindow gameWindow(sf::VideoMode((num_cols * 32), ((num_rows*32) + 100)), "Game Window", sf::Style::Close);
+
+    /* Sprite declaration */
+    Sprite face_happy("files/images/face_happy.png", num_cols, num_rows, ((num_cols/2.0f)* 32 ) - 32, 32 * (num_rows + 0.5));
+    Sprite debug("files/images/debug.png", num_cols, num_rows, (num_cols * 32) - 304, 32 * (num_rows + 0.5));
+    Sprite pause("files/images/pause.png", num_cols, num_rows, (num_cols * 32) - 240, 32 * (num_rows + 0.5));
+    Sprite leaderboard("files/images/leaderboard.png", num_cols, num_rows, (num_cols*32) - 176, 32 * (num_rows + 0.5));
+
+    /* IntRect and Sprites */
+        /* IntRect */
+    sf::IntRect counter_rect (0, 0, 21, 32);
+    sf::IntRect counter_rect2(21, 0, 21, 32);
+    sf::IntRect counter_rect3(42, 0, 21, 32);
+
+        /* Sprites */
+    Sprite counter1("files/images/digits.png", num_cols, num_rows, 33, (32 * (num_rows + 0.5) + 16 ));
+    counter1.new_sprite.setTextureRect(counter_rect);
+    counter1.new_sprite.setOrigin(21, 32);
+
+    Sprite counter2("files/images/digits.png", num_cols, num_rows, 54, (32 * (num_rows + 0.5) + 16 ));
+    counter2.new_sprite.setTextureRect(counter_rect2);
+    counter2.new_sprite.setOrigin(21, 32);
+
+    Sprite counter3("files/images/digits.png", num_cols, num_rows, 75, (32 * (num_rows + 0.5) + 16 ));
+    counter3.new_sprite.setTextureRect(counter_rect3);
+    counter3.new_sprite.setOrigin(21, 32);
+
     while(gameWindow.isOpen()) {
         sf::Event event;
         while(gameWindow.pollEvent(event)) {
@@ -142,9 +169,19 @@ bool GameWindow(int num_rows, int num_cols) {
                 return false;
             }
         }
+
+        /* draw everything to the window */
+        gameWindow.clear(sf::Color::White);
+        gameWindow.draw(face_happy.new_sprite);
+        gameWindow.draw(debug.new_sprite);
+        gameWindow.draw(pause.new_sprite);
+        gameWindow.draw(leaderboard.new_sprite);
+        gameWindow.draw(counter1.new_sprite);
+        gameWindow.draw(counter2.new_sprite);
+        gameWindow.draw(counter3.new_sprite);
+        gameWindow.display();
     }
-    gameWindow.clear();
-    gameWindow.display();
+
 }
 
 
