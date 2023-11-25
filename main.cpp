@@ -1,10 +1,11 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <map>
 #include "Text.h"
 #include "TextureManager.h"
 #include "Sprite.h"
-#include "Window.h"
+#include "Board.h"
 #include "Tile.h"
 #include <SFML/Graphics.hpp>
 
@@ -134,9 +135,10 @@ bool WelcomeWindow(int& num_rows, int& num_cols, string& user_name, int& close_w
 }
 
 bool GameWindow(int num_rows, int num_cols) {
+    map<int, Tile> tiles;
     sf::RenderWindow gameWindow(sf::VideoMode((num_cols * 32), ((num_rows*32) + 100)), "Game Window", sf::Style::Close);
 
-    /* Sprite declaration */
+    /* Basic Sprite Declaration */
     Sprite face_happy("files/images/face_happy.png", num_cols, num_rows, ((num_cols/2.0f)* 32 ) - 32, 32 * (num_rows + 0.5));
     Sprite debug("files/images/debug.png", num_cols, num_rows, (num_cols * 32) - 304, 32 * (num_rows + 0.5));
     Sprite pause("files/images/pause.png", num_cols, num_rows, (num_cols * 32) - 240, 32 * (num_rows + 0.5));
@@ -144,22 +146,55 @@ bool GameWindow(int num_rows, int num_cols) {
 
     /* IntRect and Sprites */
         /* IntRect */
-    sf::IntRect counter_rect (0, 0, 21, 32);
+    sf::IntRect counter_rect(0, 0, 21, 32);
     sf::IntRect counter_rect2(21, 0, 21, 32);
     sf::IntRect counter_rect3(42, 0, 21, 32);
+    sf::IntRect counter_rect4(63, 0, 21, 32);
+    sf::IntRect counter_rect5(84, 0, 21, 32);
+    sf::IntRect counter_rect6(105, 0, 21, 32);
+    sf::IntRect counter_rect7(126, 0, 21, 32);
+    sf::IntRect counter_rect8(147, 0, 21, 32);
+    sf::IntRect counter_rect9(168, 0, 21, 32);
 
         /* Sprites */
+            /* Counter Sprites */
     Sprite counter1("files/images/digits.png", num_cols, num_rows, 33, (32 * (num_rows + 0.5) + 16 ));
     counter1.new_sprite.setTextureRect(counter_rect);
     counter1.new_sprite.setOrigin(21, 32);
 
     Sprite counter2("files/images/digits.png", num_cols, num_rows, 54, (32 * (num_rows + 0.5) + 16 ));
-    counter2.new_sprite.setTextureRect(counter_rect2);
+    counter2.new_sprite.setTextureRect(counter_rect6);
     counter2.new_sprite.setOrigin(21, 32);
 
     Sprite counter3("files/images/digits.png", num_cols, num_rows, 75, (32 * (num_rows + 0.5) + 16 ));
-    counter3.new_sprite.setTextureRect(counter_rect3);
+    counter3.new_sprite.setTextureRect(counter_rect);
     counter3.new_sprite.setOrigin(21, 32);
+
+            /* Timer Sprites */
+    Sprite timerMinutes1("files/images/digits.png", num_cols, num_rows, (num_cols * 32) - 97, (32 * (num_rows + 0.5)) + 16);
+    timerMinutes1.new_sprite.setTextureRect(counter_rect);
+    timerMinutes1.new_sprite.setOrigin(21, 32);
+
+    Sprite timerMinutes2("files/images/digits.png", num_cols, num_rows, (num_cols * 32) - 97 + 21, (32 * (num_rows + 0.5)) + 16);
+    timerMinutes2.new_sprite.setTextureRect(counter_rect);
+    timerMinutes2.new_sprite.setOrigin(21, 32);
+
+    Sprite timerSeconds1("files/images/digits.png", num_cols, num_rows, (num_cols * 32) - 54, (32 * (num_rows + 0.5)) + 16);
+    timerSeconds1.new_sprite.setTextureRect(counter_rect);
+    timerSeconds1.new_sprite.setOrigin(21, 32);
+
+    Sprite timerSeconds2("files/images/digits.png", num_cols, num_rows, (num_cols * 32) - 54 + 21, (32 * (num_rows + 0.5)) + 16);
+    timerSeconds2.new_sprite.setTextureRect(counter_rect);
+    timerSeconds2.new_sprite.setOrigin(21, 32);
+
+
+    Tile new_tile;
+    Tile new_tile2;
+    new_tile2.state.setPosition(31, 0);
+
+
+
+
 
     while(gameWindow.isOpen()) {
         sf::Event event;
@@ -179,6 +214,13 @@ bool GameWindow(int num_rows, int num_cols) {
         gameWindow.draw(counter1.new_sprite);
         gameWindow.draw(counter2.new_sprite);
         gameWindow.draw(counter3.new_sprite);
+        gameWindow.draw(timerMinutes1.new_sprite);
+        gameWindow.draw(timerMinutes2.new_sprite);
+        gameWindow.draw(timerSeconds1.new_sprite);
+        gameWindow.draw(timerSeconds2.new_sprite);
+        gameWindow.draw(new_tile.state);
+        gameWindow.draw(new_tile2.state);
+
         gameWindow.display();
     }
 
