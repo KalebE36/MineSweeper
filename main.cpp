@@ -12,10 +12,7 @@
 using namespace std;
 void read_cfg(int &num_rows, int &num_cols, int& num_mines);
 bool WelcomeWindow(int& num_rows, int& num_cols, string& user_name, int& close_window);
-bool GameWindow(int num_rows, int num_cols);
-
-
-
+bool GameWindow(int num_rows, int num_cols, int num_mines);
 
 
 
@@ -35,7 +32,7 @@ int main() {
     }
 
     /* Run the Game Window and the actual game */
-    while(GameWindow(num_rows, num_cols)) {}
+    while(GameWindow(num_rows, num_cols, num_mines)) {}
 
     return 0;
 }
@@ -133,8 +130,26 @@ bool WelcomeWindow(int& num_rows, int& num_cols, string& user_name, int& close_w
         welcomeWindow.display();
     }
 }
+void UpdateCounterSprites(Sprite& ones, Sprite& tenths, Sprite& hundreths, int num_mines) {
+    /* Fixed width of 21 pixels */
+    int digit_width = 21;
 
-bool GameWindow(int num_rows, int num_cols) {
+    /* Calculate the digits based off the number of mines */
+
+    int hundreds_digit = num_mines / 100;
+    int tens_digit = (num_mines / 10) % 10;
+    int ones_digit = num_mines % 10;
+
+    std::cout << "Hundreds: " << hundreds_digit << ", Tens: " << tens_digit << ", Ones: " << ones_digit << std::endl;
+
+    /* Update Sprite textures */
+    hundreths.new_sprite.setTextureRect(sf::IntRect(digit_width * hundreds_digit, 0, digit_width, 32));
+    tenths.new_sprite.setTextureRect(sf::IntRect(digit_width * tens_digit, 0, digit_width, 32));
+    ones.new_sprite.setTextureRect(sf::IntRect(digit_width * ones_digit, 0, digit_width, 32));
+}
+
+
+bool GameWindow(int num_rows, int num_cols, int num_mines) {
     map<int, Tile> tiles;
     sf::RenderWindow gameWindow(sf::VideoMode((num_cols * 32), ((num_rows*32) + 100)), "Game Window", sf::Style::Close);
 
@@ -147,30 +162,28 @@ bool GameWindow(int num_rows, int num_cols) {
     /* IntRect and Sprites */
         /* IntRect */
     sf::IntRect counter_rect(0, 0, 21, 32);
-    sf::IntRect counter_rect2(21, 0, 21, 32);
-    sf::IntRect counter_rect3(42, 0, 21, 32);
-    sf::IntRect counter_rect4(63, 0, 21, 32);
-    sf::IntRect counter_rect5(84, 0, 21, 32);
-    sf::IntRect counter_rect6(105, 0, 21, 32);
-    sf::IntRect counter_rect7(126, 0, 21, 32);
-    sf::IntRect counter_rect8(147, 0, 21, 32);
+    sf::IntRect counter_rect1(21, 0, 21, 32);
+    sf::IntRect counter_rect2(42, 0, 21, 32);
+    sf::IntRect counter_rect3(63, 0, 21, 32);
+    sf::IntRect counter_rect4(84, 0, 21, 32);
+    sf::IntRect counter_rect5(105, 0, 21, 32);
+    sf::IntRect counter_rect6(126, 0, 21, 32);
+    sf::IntRect counter_rect7(147, 0, 21, 32);
+    sf::IntRect counter_rect8(168, 0, 21, 32);
     sf::IntRect counter_rect9(168, 0, 21, 32);
 
-        /* Sprites */
-            /* Counter Sprites */
-    Sprite counter1("files/images/digits.png", num_cols, num_rows, 33, (32 * (num_rows + 0.5) + 16 ));
-    counter1.new_sprite.setTextureRect(counter_rect);
-    counter1.new_sprite.setOrigin(21, 32);
+        /* Counter Sprites */
+    Sprite hundreths("files/images/digits.png", num_cols, num_rows, 33, (32 * (num_rows + 0.5) + 16 ));
+    Sprite tenths("files/images/digits.png", num_cols, num_rows, 54, (32 * (num_rows + 0.5) + 16 ));
+    Sprite ones("files/images/digits.png", num_cols, num_rows, 75, (32 * (num_rows + 0.5) + 16 ));
 
-    Sprite counter2("files/images/digits.png", num_cols, num_rows, 54, (32 * (num_rows + 0.5) + 16 ));
-    counter2.new_sprite.setTextureRect(counter_rect6);
-    counter2.new_sprite.setOrigin(21, 32);
+    UpdateCounterSprites(ones, tenths, hundreths, num_mines);
 
-    Sprite counter3("files/images/digits.png", num_cols, num_rows, 75, (32 * (num_rows + 0.5) + 16 ));
-    counter3.new_sprite.setTextureRect(counter_rect);
-    counter3.new_sprite.setOrigin(21, 32);
+    ones.new_sprite.setOrigin(21, 32);
+    tenths.new_sprite.setOrigin(21, 32);
+    hundreths.new_sprite.setOrigin(21, 32);
 
-            /* Timer Sprites */
+        /* Timer Sprites */
     Sprite timerMinutes1("files/images/digits.png", num_cols, num_rows, (num_cols * 32) - 97, (32 * (num_rows + 0.5)) + 16);
     timerMinutes1.new_sprite.setTextureRect(counter_rect);
     timerMinutes1.new_sprite.setOrigin(21, 32);
@@ -211,9 +224,9 @@ bool GameWindow(int num_rows, int num_cols) {
         gameWindow.draw(debug.new_sprite);
         gameWindow.draw(pause.new_sprite);
         gameWindow.draw(leaderboard.new_sprite);
-        gameWindow.draw(counter1.new_sprite);
-        gameWindow.draw(counter2.new_sprite);
-        gameWindow.draw(counter3.new_sprite);
+        gameWindow.draw(ones.new_sprite);
+        gameWindow.draw(tenths.new_sprite);
+        gameWindow.draw(hundreths.new_sprite);
         gameWindow.draw(timerMinutes1.new_sprite);
         gameWindow.draw(timerMinutes2.new_sprite);
         gameWindow.draw(timerSeconds1.new_sprite);
