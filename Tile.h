@@ -4,7 +4,6 @@
 #include <SFML/Graphics.hpp>
 #include "Sprite.h"
 
-
 using namespace std;
 
 #ifndef MINESWEEP_TILE_H
@@ -13,23 +12,27 @@ using namespace std;
 struct Tile {
     bool is_mine;
     bool is_revealed;
-    bool is_pressed;
     int adjacent_mines;
+    int tile_num;
     vector<Tile*> adjacent_tiles;
-    sf::Texture unrevealed_text;
-    sf::Texture revealed_text;
     sf::Sprite state;
 
 
     /* Tile Functionality */
-    Tile() {
-        unrevealed_text.loadFromFile("files/images/tile_hidden.png");
-        revealed_text.loadFromFile("files/images/tile_revealed.png");
-        state.setTexture(unrevealed_text);
+    Tile() {}
+
+    Tile(sf::Texture& default_texture, int tile_num) {
+        state.setTexture(default_texture);
+        this->tile_num = tile_num;
+
     }
 
+    void updateRevealedTile(sf::Texture& revealed_texture) {
+        state.setTexture(revealed_texture);
+    }
+
+
     void reveal() {
-        state.setTexture(revealed_text);
     }
 
     void toggleFlag() {

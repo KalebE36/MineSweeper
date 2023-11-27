@@ -140,7 +140,6 @@ void UpdateCounterSprites(Sprite& ones, Sprite& tenths, Sprite& hundreths, int n
     int tens_digit = (num_mines / 10) % 10;
     int ones_digit = num_mines % 10;
 
-    std::cout << "Hundreds: " << hundreds_digit << ", Tens: " << tens_digit << ", Ones: " << ones_digit << std::endl;
 
     /* Update Sprite textures */
     hundreths.new_sprite.setTextureRect(sf::IntRect(digit_width * hundreds_digit, 0, digit_width, 32));
@@ -150,14 +149,28 @@ void UpdateCounterSprites(Sprite& ones, Sprite& tenths, Sprite& hundreths, int n
 
 
 bool GameWindow(int num_rows, int num_cols, int num_mines) {
-    map<int, Tile> tiles;
+    Tile tiles[num_rows][num_cols];
     sf::RenderWindow gameWindow(sf::VideoMode((num_cols * 32), ((num_rows*32) + 100)), "Game Window", sf::Style::Close);
 
+    /* Texture declaration */
+    sf::Texture tile_hidden = TextureManager::getTexture("tile_hidden");
+    sf::Texture tile_revealed = TextureManager::getTexture("tile_revealed");
+    sf::Texture digits_texture = TextureManager::getTexture("digits");
+    sf::Texture happy_face = TextureManager::getTexture("face_happy");
+    sf::Texture debug_texture = TextureManager::getTexture("debug");
+    sf::Texture pause_texture = TextureManager::getTexture("pause");
+    sf::Texture leader_boardTexture = TextureManager::getTexture("leaderboard");
+
+
+
+
     /* Basic Sprite Declaration */
-    Sprite face_happy("files/images/face_happy.png", num_cols, num_rows, ((num_cols/2.0f)* 32 ) - 32, 32 * (num_rows + 0.5));
-    Sprite debug("files/images/debug.png", num_cols, num_rows, (num_cols * 32) - 304, 32 * (num_rows + 0.5));
-    Sprite pause("files/images/pause.png", num_cols, num_rows, (num_cols * 32) - 240, 32 * (num_rows + 0.5));
-    Sprite leaderboard("files/images/leaderboard.png", num_cols, num_rows, (num_cols*32) - 176, 32 * (num_rows + 0.5));
+    Sprite face_happy(happy_face, num_cols, num_rows, ((num_cols/2.0f)* 32 ) - 32, 32 * (num_rows + 0.5));
+    Sprite debug(debug_texture, num_cols, num_rows, (num_cols * 32) - 304, 32 * (num_rows + 0.5));
+    Sprite pause(pause_texture, num_cols, num_rows, (num_cols * 32) - 240, 32 * (num_rows + 0.5));
+    Sprite leaderboard(leader_boardTexture, num_cols, num_rows, (num_cols*32) - 176, 32 * (num_rows + 0.5));
+
+
 
     /* IntRect and Sprites */
         /* IntRect */
@@ -173,38 +186,54 @@ bool GameWindow(int num_rows, int num_cols, int num_mines) {
     sf::IntRect counter_rect9(168, 0, 21, 32);
 
         /* Counter Sprites */
-    Sprite hundreths("files/images/digits.png", num_cols, num_rows, 33, (32 * (num_rows + 0.5) + 16 ));
-    Sprite tenths("files/images/digits.png", num_cols, num_rows, 54, (32 * (num_rows + 0.5) + 16 ));
-    Sprite ones("files/images/digits.png", num_cols, num_rows, 75, (32 * (num_rows + 0.5) + 16 ));
+    Sprite hundreths(digits_texture, num_cols, num_rows, 33, (32 * (num_rows + 0.5) + 16 ));
+    Sprite tenths(digits_texture, num_cols, num_rows, 54, (32 * (num_rows + 0.5) + 16 ));
+    Sprite ones(digits_texture, num_cols, num_rows, 75, (32 * (num_rows + 0.5) + 16 ));
 
     UpdateCounterSprites(ones, tenths, hundreths, num_mines);
 
-    ones.new_sprite.setOrigin(21, 32);
-    tenths.new_sprite.setOrigin(21, 32);
-    hundreths.new_sprite.setOrigin(21, 32);
+
 
         /* Timer Sprites */
-    Sprite timerMinutes1("files/images/digits.png", num_cols, num_rows, (num_cols * 32) - 97, (32 * (num_rows + 0.5)) + 16);
+    Sprite timerMinutes1(digits_texture, num_cols, num_rows, (num_cols * 32) - 97, (32 * (num_rows + 0.5)) + 16);
     timerMinutes1.new_sprite.setTextureRect(counter_rect);
-    timerMinutes1.new_sprite.setOrigin(21, 32);
 
-    Sprite timerMinutes2("files/images/digits.png", num_cols, num_rows, (num_cols * 32) - 97 + 21, (32 * (num_rows + 0.5)) + 16);
+    Sprite timerMinutes2(digits_texture, num_cols, num_rows, (num_cols * 32) - 97 + 21, (32 * (num_rows + 0.5)) + 16);
     timerMinutes2.new_sprite.setTextureRect(counter_rect);
-    timerMinutes2.new_sprite.setOrigin(21, 32);
 
-    Sprite timerSeconds1("files/images/digits.png", num_cols, num_rows, (num_cols * 32) - 54, (32 * (num_rows + 0.5)) + 16);
+    Sprite timerSeconds1(digits_texture, num_cols, num_rows, (num_cols * 32) - 54, (32 * (num_rows + 0.5)) + 16);
     timerSeconds1.new_sprite.setTextureRect(counter_rect);
-    timerSeconds1.new_sprite.setOrigin(21, 32);
 
-    Sprite timerSeconds2("files/images/digits.png", num_cols, num_rows, (num_cols * 32) - 54 + 21, (32 * (num_rows + 0.5)) + 16);
+    Sprite timerSeconds2(digits_texture, num_cols, num_rows, (num_cols * 32) - 54 + 21, (32 * (num_rows + 0.5)) + 16);
     timerSeconds2.new_sprite.setTextureRect(counter_rect);
-    timerSeconds2.new_sprite.setOrigin(21, 32);
 
 
-    Tile new_tile;
-    Tile new_tile2;
-    new_tile2.state.setPosition(31, 0);
 
+
+    /* Relative X And Y For Tiles */
+        /* Map for Tiles */
+    int* x = new int;
+    int* y = new int;
+    int* z = new int;
+    *x = 0;
+    *y = 0;
+    *z = 0;
+
+    for(int i = 0; i < num_rows ; i++) {
+        for(int j = 0; j < num_cols; j++) {
+            Tile new_tile(tile_hidden,*z);
+            new_tile.state.setPosition(*x, *y);
+            tiles[i][j] = new_tile;
+            *x = *x +32;
+            *z = *z + 1;
+        }
+        *x = 0;
+        *y = *y + 32;
+    }
+
+    delete x;
+    delete y;
+    delete z;
 
 
 
@@ -216,6 +245,25 @@ bool GameWindow(int num_rows, int num_cols, int num_mines) {
                 gameWindow.close();
                 return false;
             }
+
+            if(sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
+                sf::Vector2i mousepos = sf::Mouse::getPosition(gameWindow);
+                cout << mousepos.x << endl;
+                cout << mousepos.y << endl;
+
+                int tile_xVal = mousepos.x / 32;
+                int tile_yVal = mousepos.y / 32;
+                int num_tiles = tile_xVal + (tile_yVal * num_cols);
+                for (int i = 0; i < num_rows; i++) {
+                    for (int j = 0; j < num_cols; j++) {
+                        if(num_tiles == tiles[i][j].tile_num) {
+                            tiles[i][j].updateRevealedTile(tile_revealed);
+                        }
+                    }
+                }
+
+            }
+
         }
 
         /* draw everything to the window */
@@ -231,8 +279,11 @@ bool GameWindow(int num_rows, int num_cols, int num_mines) {
         gameWindow.draw(timerMinutes2.new_sprite);
         gameWindow.draw(timerSeconds1.new_sprite);
         gameWindow.draw(timerSeconds2.new_sprite);
-        gameWindow.draw(new_tile.state);
-        gameWindow.draw(new_tile2.state);
+        for (int i = 0; i < num_rows; i++) {
+            for (int j = 0; j < num_cols; j++) {
+                gameWindow.draw(tiles[i][j].state);
+            }
+        }
 
         gameWindow.display();
     }
