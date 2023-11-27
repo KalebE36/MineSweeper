@@ -12,7 +12,7 @@
 using namespace std;
 void read_cfg(int &num_rows, int &num_cols, int& num_mines);
 bool WelcomeWindow(int& num_rows, int& num_cols, string& user_name, int& close_window);
-bool GameWindow(int num_rows, int num_cols, int& num_mines);
+void GameWindow(int num_rows, int num_cols, int& num_mines, int& game_window);
 
 
 
@@ -20,6 +20,7 @@ int main() {
     /* Special Variables */
     int num_rows, num_cols, num_mines;
     int close_window = 0;
+    int game_window = 1;
     string user_name = "";
 
     /* Functions for welcome window and reading in the config */
@@ -32,7 +33,9 @@ int main() {
     }
 
     /* Run the Game Window and the actual game */
-    while(GameWindow(num_rows, num_cols, num_mines)) {}
+    while(game_window == 1) {
+        GameWindow(num_rows, num_cols, num_mines, game_window);
+    }
 
     return 0;
 }
@@ -65,6 +68,8 @@ bool WelcomeWindow(int& num_rows, int& num_cols, string& user_name, int& close_w
     Text user_nameText(20,  "files/font.ttf", "Enter your name: ");
     Text greet_mineText(24,  "files/font.ttf", "WELCOME TO MINESWEEPER!");
     greet_mineText.new_text.setStyle(sf::Text::Underlined | sf::Text::Bold);
+    user_nameText.new_text.setStyle(sf::Text::Bold);
+    player_input.new_text.setStyle(sf::Text::Bold);
     user_nameText.setText(user_nameText.new_text, ((num_cols*32)/2.0f), ((((num_rows*32) + 100))/2.0f) - 75 );
     greet_mineText.setText(greet_mineText.new_text, ((num_cols*32)/2.0f), ((((num_rows*32) + 100))/2.0f) - 150);
     player_input.new_text.setFillColor(sf::Color::Yellow);
@@ -148,7 +153,7 @@ void UpdateCounterSprites(Sprite& ones, Sprite& tenths, Sprite& hundreths, int n
 }
 
 
-bool GameWindow(int num_rows, int num_cols, int& num_mines) {
+void GameWindow(int num_rows, int num_cols, int& num_mines, int& game_window) {
     int updated_mines = num_mines;
     Tile* tiles[num_rows][num_cols];
     sf::RenderWindow gameWindow(sf::VideoMode((num_cols * 32), ((num_rows*32) + 100)), "Game Window", sf::Style::Close);
@@ -165,16 +170,13 @@ bool GameWindow(int num_rows, int num_cols, int& num_mines) {
     sf::Texture leader_boardTexture = TextureManager::getTexture("leaderboard");
 
 
-
-
     /* Basic Sprite Declaration */
     Sprite face_happy(happy_face, num_cols, num_rows, ((num_cols/2.0f)* 32 ) - 32, 32 * (num_rows + 0.5));
     Sprite debug(debug_texture, num_cols, num_rows, (num_cols * 32) - 304, 32 * (num_rows + 0.5));
     Sprite pause(pause_texture, num_cols, num_rows, (num_cols * 32) - 240, 32 * (num_rows + 0.5));
     Sprite leaderboard(leader_boardTexture, num_cols, num_rows, (num_cols*32) - 176, 32 * (num_rows + 0.5));
 
-
-
+    
     /* IntRect and Sprites */
         /* IntRect */
     sf::IntRect counter_rect(0, 0, 21, 32);
@@ -250,21 +252,24 @@ bool GameWindow(int num_rows, int num_cols, int& num_mines) {
     delete y;
     delete z;
 
-
-
-
     while(gameWindow.isOpen()) {
         sf::Event event;
         while(gameWindow.pollEvent(event)) {
             if (event.type == sf::Event::Closed) {
                 gameWindow.close();
-                return false;
+                game_window = 0;
             }
 
             if(event.type == sf::Event::MouseButtonPressed) {
                 if(sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
                     sf::Vector2i mousepos = sf::Mouse::getPosition(gameWindow);
-
+                    if((mousepos.x <= (face_happy.new_sprite.getPosition().x + 32)) && (mousepos.x >= (face_happy.new_sprite.getPosition().x - 32))) {
+                        if((mousepos.y <= (face_happy.new_sprite.getPosition().y + 32)) && (mousepos.y >= (face_happy.new_sprite.getPosition().y - 32))) {
+                            /* Possibly fix this */
+                            gameWindow.close();
+                            GameWindow(num_rows, num_cols, num_mines, game_window);
+                        }
+                    }
                     /* Variables that allow for comparing to the tile number */
                     int tile_xVal = mousepos.x / 32;
                     int tile_yVal = mousepos.y / 32;
@@ -290,9 +295,11 @@ bool GameWindow(int num_rows, int num_cols, int& num_mines) {
                      for (int i = 0; i < num_rows; i++) {
                          for (int j = 0; j < num_cols; j++) {
                              if(num_tiles == tiles[i][j]->tile_num) {
-                                 tiles[i][j]->is_flagged = true;
-                                 updated_mines--;
-                                 UpdateCounterSprites(ones, tenths, hundreths, updated_mines);
+                                 if(!tiles[i][j]->is_revealed) {
+                                     tiles[i][j]->is_flagged = true;
+                                     updated_mines--;
+                                     UpdateCounterSprites(ones, tenths, hundreths, updated_mines);
+                                 }
                              }
                          }
                      }
@@ -327,7 +334,6 @@ bool GameWindow(int num_rows, int num_cols, int& num_mines) {
                 }
             }
         }
-
         gameWindow.display();
     }
 

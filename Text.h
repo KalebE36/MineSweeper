@@ -5,8 +5,6 @@
 #define MINESWEEP_TEXT_H
 using namespace std;
 
-
-
 struct Text {
     sf::Text new_text;
     sf::Font font;

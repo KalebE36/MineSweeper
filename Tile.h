@@ -13,6 +13,7 @@ struct Tile {
     bool is_mine;
     bool is_revealed;
     bool is_flagged;
+    bool is_debug;
     int adjacent_mines;
     int tile_num;
     vector<Tile*> adjacent_tiles;
