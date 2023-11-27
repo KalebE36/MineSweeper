@@ -149,7 +149,7 @@ void UpdateCounterSprites(Sprite& ones, Sprite& tenths, Sprite& hundreths, int n
 
 
 bool GameWindow(int num_rows, int num_cols, int num_mines) {
-    Tile tiles[num_rows][num_cols];
+    Tile* tiles[num_rows][num_cols];
     sf::RenderWindow gameWindow(sf::VideoMode((num_cols * 32), ((num_rows*32) + 100)), "Game Window", sf::Style::Close);
 
     /* Texture declaration */
@@ -218,12 +218,14 @@ bool GameWindow(int num_rows, int num_cols, int num_mines) {
     *x = 0;
     *y = 0;
     *z = 0;
-
+        /* Needed to Randomize the Mines Based on The Array */
+    vector<Tile*> flat_tiles;
     for(int i = 0; i < num_rows ; i++) {
         for(int j = 0; j < num_cols; j++) {
-            Tile new_tile(tile_hidden,*z);
-            new_tile.state.setPosition(*x, *y);
+            Tile* new_tile = new Tile(tile_hidden, *z);
+            new_tile->state.setPosition(*x, *y);
             tiles[i][j] = new_tile;
+            flat_tiles.push_back(new_tile);
             *x = *x +32;
             *z = *z + 1;
         }
@@ -231,6 +233,14 @@ bool GameWindow(int num_rows, int num_cols, int num_mines) {
         *y = *y + 32;
     }
 
+    /* Set Random Mines */
+    for (int k = 0; k < num_mines; k++) {
+        int random_index = rand() % flat_tiles.size();
+        flat_tiles[random_index]->is_mine = true;
+        flat_tiles.erase(flat_tiles.begin() + random_index);
+    }
+
+    /* Deallocation because I do not need these variables anymore */
     delete x;
     delete y;
     delete z;
@@ -248,16 +258,19 @@ bool GameWindow(int num_rows, int num_cols, int num_mines) {
 
             if(sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
                 sf::Vector2i mousepos = sf::Mouse::getPosition(gameWindow);
-                cout << mousepos.x << endl;
-                cout << mousepos.y << endl;
 
+                /* Variables that allow for comparing to the tile number */
                 int tile_xVal = mousepos.x / 32;
                 int tile_yVal = mousepos.y / 32;
                 int num_tiles = tile_xVal + (tile_yVal * num_cols);
+
                 for (int i = 0; i < num_rows; i++) {
                     for (int j = 0; j < num_cols; j++) {
-                        if(num_tiles == tiles[i][j].tile_num) {
-                            tiles[i][j].updateRevealedTile(tile_revealed);
+                        if(num_tiles == tiles[i][j]->tile_num) {
+                            if(tiles[i][j]->is_mine) {
+                                cout << "is a mine. At row: " << i << " and column: " << j << endl;
+                            }
+                            tiles[i][j]->updateRevealedTile(tile_revealed);
                         }
                     }
                 }
@@ -281,7 +294,7 @@ bool GameWindow(int num_rows, int num_cols, int num_mines) {
         gameWindow.draw(timerSeconds2.new_sprite);
         for (int i = 0; i < num_rows; i++) {
             for (int j = 0; j < num_cols; j++) {
-                gameWindow.draw(tiles[i][j].state);
+                gameWindow.draw(tiles[i][j]->state);
             }
         }
 

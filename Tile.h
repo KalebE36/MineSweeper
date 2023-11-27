@@ -24,11 +24,16 @@ struct Tile {
     Tile(sf::Texture& default_texture, int tile_num) {
         state.setTexture(default_texture);
         this->tile_num = tile_num;
+        is_mine = false;
 
     }
 
     void updateRevealedTile(sf::Texture& revealed_texture) {
         state.setTexture(revealed_texture);
+    }
+
+    void updateIfMine() {
+
     }
 
 
