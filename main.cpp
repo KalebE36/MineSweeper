@@ -176,7 +176,7 @@ void GameWindow(int num_rows, int num_cols, int& num_mines, int& game_window) {
     Sprite pause(pause_texture, num_cols, num_rows, (num_cols * 32) - 240, 32 * (num_rows + 0.5));
     Sprite leaderboard(leader_boardTexture, num_cols, num_rows, (num_cols*32) - 176, 32 * (num_rows + 0.5));
 
-    
+
     /* IntRect and Sprites */
         /* IntRect */
     sf::IntRect counter_rect(0, 0, 21, 32);
@@ -263,8 +263,8 @@ void GameWindow(int num_rows, int num_cols, int& num_mines, int& game_window) {
             if(event.type == sf::Event::MouseButtonPressed) {
                 if(sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
                     sf::Vector2i mousepos = sf::Mouse::getPosition(gameWindow);
-                    if((mousepos.x <= (face_happy.new_sprite.getPosition().x + 32)) && (mousepos.x >= (face_happy.new_sprite.getPosition().x - 32))) {
-                        if((mousepos.y <= (face_happy.new_sprite.getPosition().y + 32)) && (mousepos.y >= (face_happy.new_sprite.getPosition().y - 32))) {
+                    if((mousepos.x <= (face_happy.new_sprite.getPosition().x + 64)) && (mousepos.x >= face_happy.new_sprite.getPosition().x)) {
+                        if((mousepos.y <= (face_happy.new_sprite.getPosition().y + 64)) && (mousepos.y >= face_happy.new_sprite.getPosition().y)) {
                             /* Possibly fix this */
                             gameWindow.close();
                             GameWindow(num_rows, num_cols, num_mines, game_window);
@@ -280,6 +280,15 @@ void GameWindow(int num_rows, int num_cols, int& num_mines, int& game_window) {
                             if(num_tiles == tiles[i][j]->tile_num) {
                                 if(!tiles[i][j]->is_flagged) {
                                     tiles[i][j]->updateRevealedTile(tile_revealed);
+                                }
+                                if(tiles[i][j]->is_mine) {
+                                    for (int i = 0; i < num_rows; i++) {
+                                        for (int j = 0; j < num_cols; j++) {
+                                            if(tiles[i][j]->is_mine) {
+                                                tiles[i][j]->updateRevealedTile(tile_revealed);
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }
