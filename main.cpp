@@ -167,6 +167,7 @@ void GameWindow(int num_rows, int num_cols, int& num_mines, int& game_window) {
         /* Other Textures */
     sf::Texture digits_texture = TextureManager::getTexture("digits");
     sf::Texture happy_face = TextureManager::getTexture("face_happy");
+    sf::Texture losing_face = TextureManager::getTexture("face_lose");
     sf::Texture debug_texture = TextureManager::getTexture("debug");
     sf::Texture pause_texture = TextureManager::getTexture("pause");
     sf::Texture leader_boardTexture = TextureManager::getTexture("leaderboard");
@@ -231,8 +232,11 @@ void GameWindow(int num_rows, int num_cols, int& num_mines, int& game_window) {
     *x = 0;
     *y = 0;
     *z = 0;
-        /* Needed to Randomize the Mines Based on The Array */
+
+        /* Need to Randomize the Mines Based on The Array */
     vector<Tile*> flat_tiles;
+
+    /* Setting Sprites and Positions */
     for(int i = 0; i < num_rows ; i++) {
         for(int j = 0; j < num_cols; j++) {
             Tile* new_tile = new Tile(tile_hidden, mine_texture, flag_texture, *z);
