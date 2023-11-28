@@ -1,11 +1,9 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-#include <map>
 #include "Text.h"
 #include "TextureManager.h"
 #include "Sprite.h"
-#include "Board.h"
 #include "Tile.h"
 #include <SFML/Graphics.hpp>
 
