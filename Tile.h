@@ -20,6 +20,7 @@ struct Tile {
     sf::Sprite state;
     sf::Sprite mine_sprite;
     sf::Sprite flag_sprite;
+    sf::Sprite number_sprite;
 
 
     /* Tile Functionality */
@@ -41,15 +42,15 @@ struct Tile {
         state.setTexture(revealed_texture);
     }
 
-
-    void reveal() {
+    int adjacentBombs() {
+        int num_bombs = 0;
+        for(int i = 0; i < adjacent_tiles.size(); i++) {
+            if(adjacent_tiles.at(i)->is_mine) {
+                num_bombs++;
+            }
+        }
+        return num_bombs;
     }
-
-    void toggleFlag() {
-        is_flagged = true;
-    }
-
-
 };
 
 

@@ -135,6 +135,8 @@ bool WelcomeWindow(int& num_rows, int& num_cols, string& user_name, int& close_w
         welcomeWindow.display();
     }
 }
+
+
 void UpdateCounterSprites(Sprite& ones, Sprite& tenths, Sprite& hundreths, int num_mines) {
     /* Fixed width of 21 pixels */
     int digit_width = 21;
@@ -159,15 +161,26 @@ void GameWindow(int num_rows, int num_cols, int& num_mines, int& game_window) {
     sf::RenderWindow gameWindow(sf::VideoMode((num_cols * 32), ((num_rows*32) + 100)), "Game Window", sf::Style::Close);
 
     /* Texture declaration */
+        /* Tile Textures */
     sf::Texture tile_hidden = TextureManager::getTexture("tile_hidden");
     sf::Texture tile_revealed = TextureManager::getTexture("tile_revealed");
     sf::Texture mine_texture = TextureManager::getTexture("mine");
     sf::Texture flag_texture = TextureManager::getTexture("flag");
+        /* Other Textures */
     sf::Texture digits_texture = TextureManager::getTexture("digits");
     sf::Texture happy_face = TextureManager::getTexture("face_happy");
     sf::Texture debug_texture = TextureManager::getTexture("debug");
     sf::Texture pause_texture = TextureManager::getTexture("pause");
     sf::Texture leader_boardTexture = TextureManager::getTexture("leaderboard");
+        /* Number Textures */
+    sf::Texture number_one = TextureManager::getTexture("number_1");
+    sf::Texture number_two = TextureManager::getTexture("number_2");
+    sf::Texture number_three = TextureManager::getTexture("number_3");
+    sf::Texture number_four = TextureManager::getTexture("number_4");
+    sf::Texture number_five = TextureManager::getTexture("number_5");
+    sf::Texture number_six = TextureManager::getTexture("number_6");
+    sf::Texture number_seven = TextureManager::getTexture("number_7");
+    sf::Texture number_eight = TextureManager::getTexture("number_8");
 
 
     /* Basic Sprite Declaration */
@@ -212,9 +225,6 @@ void GameWindow(int num_rows, int num_cols, int& num_mines, int& game_window) {
     Sprite timerSeconds2(digits_texture, num_cols, num_rows, (num_cols * 32) - 54 + 21, (32 * (num_rows + 0.5)) + 16);
     timerSeconds2.new_sprite.setTextureRect(counter_rect);
 
-
-
-
     /* Relative X And Y For Tiles */
         /* Map for Tiles */
     int* x = new int;
@@ -231,6 +241,8 @@ void GameWindow(int num_rows, int num_cols, int& num_mines, int& game_window) {
             new_tile->state.setPosition(*x, *y);
             new_tile->mine_sprite.setPosition(*x, *y);
             new_tile->flag_sprite.setPosition(*x, *y);
+            new_tile->number_sprite.setPosition(*x, *y);
+
             tiles[i][j] = new_tile;
             flat_tiles.push_back(new_tile);
             *x = *x +32;
@@ -252,6 +264,90 @@ void GameWindow(int num_rows, int num_cols, int& num_mines, int& game_window) {
     delete y;
     delete z;
 
+    /* Need to set the adjacent tiles */
+    for(int i = 0; i < num_rows ; i++) {
+        for (int j = 0; j < num_cols; j++) {
+            vector<Tile *> adjacent_tiles;
+            if ((j == 0) && (i == 0)) {
+                adjacent_tiles.push_back(tiles[i][j + 1]);
+                adjacent_tiles.push_back(tiles[i + 1][j]);
+                adjacent_tiles.push_back(tiles[i + 1][j + 1]);
+                tiles[i][j]->adjacent_tiles = adjacent_tiles;
+            } else if ((j == num_cols-1) && (i == 0)) {
+                adjacent_tiles.push_back(tiles[i][j - 1]);
+                adjacent_tiles.push_back(tiles[i + 1][j]);
+                adjacent_tiles.push_back(tiles[i + 1][j - 1]);
+                tiles[i][j]->adjacent_tiles = adjacent_tiles;
+            } else if ((j == num_cols-1) && (i == num_rows-1)) {
+                adjacent_tiles.push_back(tiles[i][j - 1]);
+                adjacent_tiles.push_back(tiles[i - 1][j]);
+                adjacent_tiles.push_back(tiles[i - 1][j - 1]);
+                tiles[i][j]->adjacent_tiles = adjacent_tiles;
+            } else if ((i == num_rows-1) && (j == 0)) {
+                adjacent_tiles.push_back(tiles[i][j + 1]);
+                adjacent_tiles.push_back(tiles[i - 1][j]);
+                adjacent_tiles.push_back(tiles[i - 1][j + 1]);
+                tiles[i][j]->adjacent_tiles = adjacent_tiles;
+            } else if (j == 0) {
+                adjacent_tiles.push_back(tiles[i][j + 1]);
+                adjacent_tiles.push_back(tiles[i + 1][j]);
+                adjacent_tiles.push_back(tiles[i + 1][j + 1]);
+                adjacent_tiles.push_back(tiles[i - 1][j]);
+                adjacent_tiles.push_back(tiles[i - 1][j + 1]);
+                tiles[i][j]->adjacent_tiles = adjacent_tiles;
+            } else if (i == 0) {
+                adjacent_tiles.push_back(tiles[i][j + 1]);
+                adjacent_tiles.push_back(tiles[i][j - 1]);
+                adjacent_tiles.push_back(tiles[i + 1][j + 1]);
+                adjacent_tiles.push_back(tiles[i + 1][j]);
+                adjacent_tiles.push_back(tiles[i + 1][j - 1]);
+                tiles[i][j]->adjacent_tiles = adjacent_tiles;
+
+            } else if (j == num_cols-1) {
+                adjacent_tiles.push_back(tiles[i - 1][j]);
+                adjacent_tiles.push_back(tiles[i - 1][j - 1]);
+                adjacent_tiles.push_back(tiles[i][j - 1]);
+                adjacent_tiles.push_back(tiles[i + 1][j - 1]);
+                adjacent_tiles.push_back(tiles[i + 1][j]);
+                tiles[i][j]->adjacent_tiles = adjacent_tiles;
+            } else if (i == num_rows-1) {
+                adjacent_tiles.push_back(tiles[i][j + 1]);
+                adjacent_tiles.push_back(tiles[i][j - 1]);
+                adjacent_tiles.push_back(tiles[i - 1][j + 1]);
+                adjacent_tiles.push_back(tiles[i - 1][j]);
+                adjacent_tiles.push_back(tiles[i - 1][j - 1]);
+                tiles[i][j]->adjacent_tiles = adjacent_tiles;
+            } else {
+                adjacent_tiles.push_back(tiles[i][j + 1]);
+                adjacent_tiles.push_back(tiles[i][j - 1]);
+                adjacent_tiles.push_back(tiles[i + 1][j + 1]);
+                adjacent_tiles.push_back(tiles[i + 1][j]);
+                adjacent_tiles.push_back(tiles[i + 1][j - 1]);
+                adjacent_tiles.push_back(tiles[i - 1][j]);
+                adjacent_tiles.push_back(tiles[i - 1][j - 1]);
+                adjacent_tiles.push_back(tiles[i - 1][j + 1]);
+                tiles[i][j]->adjacent_tiles = adjacent_tiles;
+            }
+            if(tiles[i][j]->adjacentBombs() == 1) {
+                tiles[i][j]->number_sprite.setTexture(number_one);
+            } else if (tiles[i][j]->adjacentBombs() == 2) {
+                tiles[i][j]->number_sprite.setTexture(number_two);
+            } else if (tiles[i][j]->adjacentBombs() == 3) {
+                tiles[i][j]->number_sprite.setTexture(number_three);
+            }  else if (tiles[i][j]->adjacentBombs() == 4) {
+                tiles[i][j]->number_sprite.setTexture(number_four);
+            } else if (tiles[i][j]->adjacentBombs() == 5) {
+                tiles[i][j]->number_sprite.setTexture(number_five);
+            } else if (tiles[i][j]->adjacentBombs() == 6) {
+                tiles[i][j]->number_sprite.setTexture(number_six);
+            } else if (tiles[i][j]->adjacentBombs() == 7) {
+                tiles[i][j]->number_sprite.setTexture(number_seven);
+            } else if (tiles[i][j]->adjacentBombs() == 8) {
+                tiles[i][j]->number_sprite.setTexture(number_eight);
+            } else {}
+        }
+    }
+
     while(gameWindow.isOpen()) {
         sf::Event event;
         while(gameWindow.pollEvent(event)) {
@@ -270,7 +366,14 @@ void GameWindow(int num_rows, int num_cols, int& num_mines, int& game_window) {
                             GameWindow(num_rows, num_cols, num_mines, game_window);
                         }
                     }
-                    /* Variables that allow for comparing to the tile number */
+
+                    if((mousepos.x <= (debug.new_sprite.getPosition().x + 64)) && (mousepos.x >= debug.new_sprite.getPosition().x)) {
+                        if ((mousepos.y <= (debug.new_sprite.getPosition().y + 64)) && (mousepos.y >= debug.new_sprite.getPosition().y)) {
+                            /* Implement debug button */
+                        }
+                    }
+
+                            /* Variables that allow for comparing to the tile number */
                     int tile_xVal = mousepos.x / 32;
                     int tile_yVal = mousepos.y / 32;
                     int num_tiles = tile_xVal + (tile_yVal * num_cols);
@@ -338,6 +441,9 @@ void GameWindow(int num_rows, int num_cols, int& num_mines, int& game_window) {
                 } else if (tiles[i][j]->is_flagged) {
                     gameWindow.draw(tiles[i][j]->state);
                     gameWindow.draw(tiles[i][j]->flag_sprite);
+                } else if (tiles[i][j]->is_revealed && (tiles[i][j]->adjacent_tiles.size() != 0)) {
+                    gameWindow.draw(tiles[i][j]->state);
+                    gameWindow.draw(tiles[i][j]->number_sprite);
                 } else {
                     gameWindow.draw(tiles[i][j]->state);
                 }
