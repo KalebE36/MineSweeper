@@ -433,9 +433,15 @@ void GameWindow(int num_rows, int num_cols, int& num_mines, int& game_window) {
                          for (int j = 0; j < num_cols; j++) {
                              if(num_tiles == tiles[i][j]->tile_num) {
                                  if(!tiles[i][j]->is_revealed) {
-                                     tiles[i][j]->is_flagged = true;
-                                     updated_mines--;
-                                     UpdateCounterSprites(ones, tenths, hundreths, updated_mines);
+                                     if(tiles[i][j]->is_flagged) {
+                                         tiles[i][j]->is_flagged = false;
+                                         updated_mines++;
+                                         UpdateCounterSprites(ones, tenths, hundreths, updated_mines);
+                                     } else {
+                                         tiles[i][j]->is_flagged = true;
+                                         updated_mines--;
+                                         UpdateCounterSprites(ones, tenths, hundreths, updated_mines);
+                                     }
                                  }
                              }
                          }
