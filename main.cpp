@@ -10,8 +10,8 @@
 using namespace std;
 void read_cfg(int &num_rows, int &num_cols, int& num_mines);
 bool WelcomeWindow(int& num_rows, int& num_cols, string& user_name, int& close_window);
+void revealAdjacentTiles(Tile& current_tile, sf::Texture& revealed_texture);
 void GameWindow(int num_rows, int num_cols, int& num_mines, int& game_window);
-
 
 
 int main() {
@@ -150,6 +150,20 @@ void UpdateCounterSprites(Sprite& ones, Sprite& tenths, Sprite& hundreths, int n
     hundreths.new_sprite.setTextureRect(sf::IntRect(digit_width * hundreds_digit, 0, digit_width, 32));
     tenths.new_sprite.setTextureRect(sf::IntRect(digit_width * tens_digit, 0, digit_width, 32));
     ones.new_sprite.setTextureRect(sf::IntRect(digit_width * ones_digit, 0, digit_width, 32));
+}
+
+void revealAdjacentTiles(Tile& current_tile, sf::Texture& revealed_texture) {
+    for(int i = 0; i < current_tile.adjacent_tiles.size(); i++) {
+        if((!current_tile.adjacent_tiles.at(i)->is_mine) && (!current_tile.adjacent_tiles.at(i)->is_revealed) && (current_tile.adjacent_tiles.at(i)->adjacentBombs() == 0) && (current_tile.adjacent_mines == 0)) {
+            current_tile.adjacent_tiles.at(i)->is_revealed = true;
+            current_tile.adjacent_tiles.at(i)->state.setTexture(revealed_texture);
+            revealAdjacentTiles(*current_tile.adjacent_tiles.at(i), revealed_texture);
+        }
+        if((current_tile.adjacent_tiles.at(i)->adjacentBombs() != 0) && (!current_tile.adjacent_tiles.at(i)->is_mine) && (!current_tile.adjacent_tiles.at(i)->is_revealed) && (current_tile.adjacent_mines == 0)) {
+            current_tile.adjacent_tiles.at(i)->is_revealed = true;
+            current_tile.adjacent_tiles.at(i)->state.setTexture(revealed_texture);
+        }
+    }
 }
 
 
@@ -332,20 +346,28 @@ void GameWindow(int num_rows, int num_cols, int& num_mines, int& game_window) {
             }
             if(tiles[i][j]->adjacentBombs() == 1) {
                 tiles[i][j]->number_sprite.setTexture(number_one);
+                tiles[i][j]->adjacent_mines = 1;
             } else if (tiles[i][j]->adjacentBombs() == 2) {
                 tiles[i][j]->number_sprite.setTexture(number_two);
+                tiles[i][j]->adjacent_mines = 2;
             } else if (tiles[i][j]->adjacentBombs() == 3) {
                 tiles[i][j]->number_sprite.setTexture(number_three);
+                tiles[i][j]->adjacent_mines = 3;
             }  else if (tiles[i][j]->adjacentBombs() == 4) {
                 tiles[i][j]->number_sprite.setTexture(number_four);
+                tiles[i][j]->adjacent_mines = 4;
             } else if (tiles[i][j]->adjacentBombs() == 5) {
                 tiles[i][j]->number_sprite.setTexture(number_five);
+                tiles[i][j]->adjacent_mines = 5;
             } else if (tiles[i][j]->adjacentBombs() == 6) {
                 tiles[i][j]->number_sprite.setTexture(number_six);
+                tiles[i][j]->adjacent_mines = 6;
             } else if (tiles[i][j]->adjacentBombs() == 7) {
                 tiles[i][j]->number_sprite.setTexture(number_seven);
+                tiles[i][j]->adjacent_mines = 7;
             } else if (tiles[i][j]->adjacentBombs() == 8) {
                 tiles[i][j]->number_sprite.setTexture(number_eight);
+                tiles[i][j]->adjacent_mines = 8;
             } else {}
         }
     }
@@ -383,8 +405,9 @@ void GameWindow(int num_rows, int num_cols, int& num_mines, int& game_window) {
                     for (int i = 0; i < num_rows; i++) {
                         for (int j = 0; j < num_cols; j++) {
                             if(num_tiles == tiles[i][j]->tile_num) {
-                                if(!tiles[i][j]->is_flagged) {
+                                if(!tiles[i][j]->is_flagged && !tiles[i][j]->is_revealed) {
                                     tiles[i][j]->updateRevealedTile(tile_revealed);
+                                    revealAdjacentTiles(*tiles[i][j], tile_revealed);
                                 }
                                 if(tiles[i][j]->is_mine) {
                                     for (int i = 0; i < num_rows; i++) {
