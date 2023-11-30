@@ -34,6 +34,7 @@ struct Tile {
         is_mine = false;
         is_revealed = false;
         is_flagged = false;
+        is_debug = false;
 
     }
 

@@ -11,7 +11,7 @@ using namespace std;
 void read_cfg(int &num_rows, int &num_cols, int& num_mines);
 bool WelcomeWindow(int& num_rows, int& num_cols, string& user_name, int& close_window);
 void revealAdjacentTiles(Tile& current_tile, sf::Texture& revealed_texture);
-void GameWindow(int num_rows, int num_cols, int& num_mines, int& game_window);
+void GameWindow(int& num_rows, int& num_cols, int& num_mines, int& game_window, int& game_state);
 
 
 int main() {
@@ -31,8 +31,9 @@ int main() {
     }
 
     /* Run the Game Window and the actual game */
+    int game_state = 1;
     while(game_window == 1) {
-        GameWindow(num_rows, num_cols, num_mines, game_window);
+        GameWindow(num_rows, num_cols, num_mines, game_window, game_state);
     }
 
     return 0;
@@ -167,7 +168,7 @@ void revealAdjacentTiles(Tile& current_tile, sf::Texture& revealed_texture) {
 }
 
 
-void GameWindow(int num_rows, int num_cols, int& num_mines, int& game_window) {
+void GameWindow(int& num_rows, int& num_cols, int& num_mines, int& game_window, int& game_state) {
     int updated_mines = num_mines;
     Tile* tiles[num_rows][num_cols];
     sf::RenderWindow gameWindow(sf::VideoMode((num_cols * 32), ((num_rows*32) + 100)), "Game Window", sf::Style::Close);
@@ -387,13 +388,24 @@ void GameWindow(int num_rows, int num_cols, int& num_mines, int& game_window) {
                         if((mousepos.y <= (face_happy.new_sprite.getPosition().y + 64)) && (mousepos.y >= face_happy.new_sprite.getPosition().y)) {
                             /* Possibly fix this */
                             gameWindow.close();
-                            GameWindow(num_rows, num_cols, num_mines, game_window);
+                            GameWindow(num_rows, num_cols, num_mines, game_window, game_state);
                         }
                     }
 
+                    /* Implement debug button */
                     if((mousepos.x <= (debug.new_sprite.getPosition().x + 64)) && (mousepos.x >= debug.new_sprite.getPosition().x)) {
                         if ((mousepos.y <= (debug.new_sprite.getPosition().y + 64)) && (mousepos.y >= debug.new_sprite.getPosition().y)) {
-                            /* Implement debug button */
+                            for (int i = 0; i < num_rows; i++) {
+                                for (int j = 0; j < num_cols; j++) {
+                                    if((tiles[i][j]->is_mine) && (!tiles[i][j]->is_debug)) {
+                                        tiles[i][j]->is_debug = true;
+                                        tiles[i][j]->is_revealed = true;
+                                    } else if((tiles[i][j]->is_mine) && (tiles[i][j]->is_debug)) {
+                                        tiles[i][j]->is_debug = false;
+                                        tiles[i][j]->is_revealed = false;
+                                    } else {}
+                                }
+                            }
                         }
                     }
 
@@ -402,10 +414,11 @@ void GameWindow(int num_rows, int num_cols, int& num_mines, int& game_window) {
                     int tile_yVal = mousepos.y / 32;
                     int num_tiles = tile_xVal + (tile_yVal * num_cols);
 
+                    /* Revealing adjacent tiles and mines if clicked */
                     for (int i = 0; i < num_rows; i++) {
                         for (int j = 0; j < num_cols; j++) {
                             if(num_tiles == tiles[i][j]->tile_num) {
-                                if(!tiles[i][j]->is_flagged && !tiles[i][j]->is_revealed) {
+                                if(!tiles[i][j]->is_flagged && !tiles[i][j]->is_revealed && !tiles[i][j]->is_mine) {
                                     tiles[i][j]->updateRevealedTile(tile_revealed);
                                     revealAdjacentTiles(*tiles[i][j], tile_revealed);
                                 }
@@ -472,10 +485,14 @@ void GameWindow(int num_rows, int num_cols, int& num_mines, int& game_window) {
                 } else if (tiles[i][j]->is_flagged) {
                     gameWindow.draw(tiles[i][j]->state);
                     gameWindow.draw(tiles[i][j]->flag_sprite);
-                } else if (tiles[i][j]->is_revealed && (tiles[i][j]->adjacent_tiles.size() != 0)) {
+                } else if (tiles[i][j]->is_flagged && tiles[i][j]->is_debug) {
+                    gameWindow.draw(tiles[i][j]->state);
+                    gameWindow.draw(tiles[i][j]->flag_sprite);
+                    gameWindow.draw(tiles[i][j]->mine_sprite);
+                } else if (tiles[i][j]->is_revealed) {
                     gameWindow.draw(tiles[i][j]->state);
                     gameWindow.draw(tiles[i][j]->number_sprite);
-                } else {
+                }  else {
                     gameWindow.draw(tiles[i][j]->state);
                 }
             }
