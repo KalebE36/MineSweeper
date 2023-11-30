@@ -31,7 +31,7 @@ int main() {
     }
 
     /* Run the Game Window and the actual game */
-    int game_state = 1;
+    int game_state;
     while(game_window == 1) {
         GameWindow(num_rows, num_cols, num_mines, game_window, game_state);
     }
@@ -169,6 +169,7 @@ void revealAdjacentTiles(Tile& current_tile, sf::Texture& revealed_texture) {
 
 
 void GameWindow(int& num_rows, int& num_cols, int& num_mines, int& game_window, int& game_state) {
+    game_state = 1;
     int updated_mines = num_mines;
     Tile* tiles[num_rows][num_cols];
     sf::RenderWindow gameWindow(sf::VideoMode((num_cols * 32), ((num_rows*32) + 100)), "Game Window", sf::Style::Close);
@@ -199,6 +200,7 @@ void GameWindow(int& num_rows, int& num_cols, int& num_mines, int& game_window, 
 
     /* Basic Sprite Declaration */
     Sprite face_happy(happy_face, num_cols, num_rows, ((num_cols/2.0f)* 32 ) - 32, 32 * (num_rows + 0.5));
+    Sprite face_lose(losing_face, num_cols, num_rows, ((num_cols/2.0f)* 32 ) - 32, 32 * (num_rows + 0.5));
     Sprite debug(debug_texture, num_cols, num_rows, (num_cols * 32) - 304, 32 * (num_rows + 0.5));
     Sprite pause(pause_texture, num_cols, num_rows, (num_cols * 32) - 240, 32 * (num_rows + 0.5));
     Sprite leaderboard(leader_boardTexture, num_cols, num_rows, (num_cols*32) - 176, 32 * (num_rows + 0.5));
@@ -426,6 +428,7 @@ void GameWindow(int& num_rows, int& num_cols, int& num_mines, int& game_window, 
                                     for (int i = 0; i < num_rows; i++) {
                                         for (int j = 0; j < num_cols; j++) {
                                             if(tiles[i][j]->is_mine) {
+                                                game_state = 0;
                                                 tiles[i][j]->updateRevealedTile(tile_revealed);
                                             }
                                         }
@@ -466,7 +469,6 @@ void GameWindow(int& num_rows, int& num_cols, int& num_mines, int& game_window, 
 
         /* draw everything to the window */
         gameWindow.clear(sf::Color::White);
-        gameWindow.draw(face_happy.new_sprite);
         gameWindow.draw(debug.new_sprite);
         gameWindow.draw(pause.new_sprite);
         gameWindow.draw(leaderboard.new_sprite);
@@ -477,6 +479,11 @@ void GameWindow(int& num_rows, int& num_cols, int& num_mines, int& game_window, 
         gameWindow.draw(timerMinutes2.new_sprite);
         gameWindow.draw(timerSeconds1.new_sprite);
         gameWindow.draw(timerSeconds2.new_sprite);
+        if(game_state == 1) {
+            gameWindow.draw(face_happy.new_sprite);
+        } else if (game_state == 0) {
+            gameWindow.draw(face_lose.new_sprite);
+        }
         for (int i = 0; i < num_rows; i++) {
             for (int j = 0; j < num_cols; j++) {
                 if(tiles[i][j]->is_mine && tiles[i][j]->is_revealed) {
