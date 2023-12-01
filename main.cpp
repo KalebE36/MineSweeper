@@ -11,6 +11,8 @@ using namespace std;
 void read_cfg(int &num_rows, int &num_cols, int& num_mines);
 bool WelcomeWindow(int& num_rows, int& num_cols, string& user_name, int& close_window);
 void revealAdjacentTiles(Tile& current_tile, sf::Texture& revealed_texture);
+map<int, sf::Sprite> timerDigits(sf::Sprite digits);
+void drawTimer(sf::RenderWindow& gameWindow);
 void GameWindow(int& num_rows, int& num_cols, int& num_mines, int& game_window, int& game_state);
 
 
@@ -167,12 +169,34 @@ void revealAdjacentTiles(Tile& current_tile, sf::Texture& revealed_texture) {
     }
 }
 
+map<int, sf::Sprite> timerDigits(sf::Sprite digits){
+    map<int, sf::Sprite> digitsMap;
+
+    for(int i = 0; i < 10; i++){
+        sf::IntRect rect(i*21,0,21,32);
+        digits.setTextureRect(rect);
+        sf::Sprite sprite = digits;
+        digitsMap.emplace(i, sprite);
+    }
+
+    return digitsMap;
+}
+
+void drawTimer(sf::RenderWindow& gameWindow) {
+
+}
 
 void GameWindow(int& num_rows, int& num_cols, int& num_mines, int& game_window, int& game_state) {
     game_state = 1;
     int updated_mines = num_mines;
     Tile* tiles[num_rows][num_cols];
     sf::RenderWindow gameWindow(sf::VideoMode((num_cols * 32), ((num_rows*32) + 100)), "Game Window", sf::Style::Close);
+
+    /* Timer variables */
+    auto start_time = chrono::high_resolution_clock::now();
+    auto pause_time = chrono::high_resolution_clock::now();
+    auto elapsed_paused_time = chrono::duration_cast<chrono::seconds>(chrono::high_resolution_clock::now() - pause_time).count();
+    bool paused = false;
 
     /* Texture declaration */
         /* Tile Textures */
@@ -186,6 +210,7 @@ void GameWindow(int& num_rows, int& num_cols, int& num_mines, int& game_window, 
     sf::Texture losing_face = TextureManager::getTexture("face_lose");
     sf::Texture debug_texture = TextureManager::getTexture("debug");
     sf::Texture pause_texture = TextureManager::getTexture("pause");
+    sf::Texture play_texture = TextureManager::getTexture("play");
     sf::Texture leader_boardTexture = TextureManager::getTexture("leaderboard");
         /* Number Textures */
     sf::Texture number_one = TextureManager::getTexture("number_1");
@@ -203,7 +228,13 @@ void GameWindow(int& num_rows, int& num_cols, int& num_mines, int& game_window, 
     Sprite face_lose(losing_face, num_cols, num_rows, ((num_cols/2.0f)* 32 ) - 32, 32 * (num_rows + 0.5));
     Sprite debug(debug_texture, num_cols, num_rows, (num_cols * 32) - 304, 32 * (num_rows + 0.5));
     Sprite pause(pause_texture, num_cols, num_rows, (num_cols * 32) - 240, 32 * (num_rows + 0.5));
+    Sprite play (play_texture, num_cols, num_rows, (num_cols * 32) - 240, 32 * (num_rows + 0.5));
     Sprite leaderboard(leader_boardTexture, num_cols, num_rows, (num_cols*32) - 176, 32 * (num_rows + 0.5));
+
+    /* For the Timer, Bad code */
+    sf::Sprite digit_sprite;
+    digit_sprite.setTexture(digits_texture);
+    map<int, sf::Sprite> digitsMap = timerDigits(digit_sprite);
 
 
     /* IntRect and Sprites */
@@ -226,20 +257,6 @@ void GameWindow(int& num_rows, int& num_cols, int& num_mines, int& game_window, 
 
     UpdateCounterSprites(ones, tenths, hundreths, num_mines);
 
-
-
-        /* Timer Sprites */
-    Sprite timerMinutes1(digits_texture, num_cols, num_rows, (num_cols * 32) - 97, (32 * (num_rows + 0.5)) + 16);
-    timerMinutes1.new_sprite.setTextureRect(counter_rect);
-
-    Sprite timerMinutes2(digits_texture, num_cols, num_rows, (num_cols * 32) - 97 + 21, (32 * (num_rows + 0.5)) + 16);
-    timerMinutes2.new_sprite.setTextureRect(counter_rect);
-
-    Sprite timerSeconds1(digits_texture, num_cols, num_rows, (num_cols * 32) - 54, (32 * (num_rows + 0.5)) + 16);
-    timerSeconds1.new_sprite.setTextureRect(counter_rect);
-
-    Sprite timerSeconds2(digits_texture, num_cols, num_rows, (num_cols * 32) - 54 + 21, (32 * (num_rows + 0.5)) + 16);
-    timerSeconds2.new_sprite.setTextureRect(counter_rect);
 
     /* Relative X And Y For Tiles */
         /* Map for Tiles */
@@ -386,6 +403,22 @@ void GameWindow(int& num_rows, int& num_cols, int& num_mines, int& game_window, 
             if(event.type == sf::Event::MouseButtonPressed) {
                 if(sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
                     sf::Vector2i mousepos = sf::Mouse::getPosition(gameWindow);
+                    if((mousepos.x <= (pause.new_sprite.getPosition().x + 64)) && (mousepos.x >= pause.new_sprite.getPosition().x)) {
+                        if((mousepos.y <= (pause.new_sprite.getPosition().y + 64)) && (mousepos.y >= pause.new_sprite.getPosition().y)) {
+                            if (game_state == 1) {
+                                paused = !paused;
+                                if(paused) {
+                                    cout << "paused" << endl;
+                                    pause_time = chrono::high_resolution_clock::now();
+                                }else{
+                                    auto unPausedTime = chrono::steady_clock::now();
+                                    elapsed_paused_time += chrono::duration_cast<chrono::seconds>(unPausedTime - pause_time).count(); //Addition is necessary for when hitting the pause button more than once
+                                    //cout << elapsed_paused_time % 60 << " " << endl;
+                                }
+                            }
+                        }
+                    }
+
                     if((mousepos.x <= (face_happy.new_sprite.getPosition().x + 64)) && (mousepos.x >= face_happy.new_sprite.getPosition().x)) {
                         if((mousepos.y <= (face_happy.new_sprite.getPosition().y + 64)) && (mousepos.y >= face_happy.new_sprite.getPosition().y)) {
                             /* Possibly fix this */
@@ -411,7 +444,7 @@ void GameWindow(int& num_rows, int& num_cols, int& num_mines, int& game_window, 
                         }
                     }
 
-                            /* Variables that allow for comparing to the tile number */
+                    /* Variables that allow for comparing to the tile number */
                     int tile_xVal = mousepos.x / 32;
                     int tile_yVal = mousepos.y / 32;
                     int num_tiles = tile_xVal + (tile_yVal * num_cols);
@@ -420,7 +453,7 @@ void GameWindow(int& num_rows, int& num_cols, int& num_mines, int& game_window, 
                     for (int i = 0; i < num_rows; i++) {
                         for (int j = 0; j < num_cols; j++) {
                             if(num_tiles == tiles[i][j]->tile_num) {
-                                if(!tiles[i][j]->is_flagged && !tiles[i][j]->is_revealed && !tiles[i][j]->is_mine) {
+                                if(!tiles[i][j]->is_flagged && !tiles[i][j]->is_revealed && !tiles[i][j]->is_mine && (game_state == 1)) {
                                     tiles[i][j]->updateRevealedTile(tile_revealed);
                                     revealAdjacentTiles(*tiles[i][j], tile_revealed);
                                 }
@@ -429,6 +462,7 @@ void GameWindow(int& num_rows, int& num_cols, int& num_mines, int& game_window, 
                                         for (int j = 0; j < num_cols; j++) {
                                             if(tiles[i][j]->is_mine) {
                                                 game_state = 0;
+                                                paused = true;
                                                 tiles[i][j]->updateRevealedTile(tile_revealed);
                                             }
                                         }
@@ -448,7 +482,7 @@ void GameWindow(int& num_rows, int& num_cols, int& num_mines, int& game_window, 
                      for (int i = 0; i < num_rows; i++) {
                          for (int j = 0; j < num_cols; j++) {
                              if(num_tiles == tiles[i][j]->tile_num) {
-                                 if(!tiles[i][j]->is_revealed) {
+                                 if(!tiles[i][j]->is_revealed && (game_state == 1)) {
                                      if(tiles[i][j]->is_flagged) {
                                          tiles[i][j]->is_flagged = false;
                                          updated_mines++;
@@ -467,18 +501,44 @@ void GameWindow(int& num_rows, int& num_cols, int& num_mines, int& game_window, 
 
         }
 
+        auto game_duration = std::chrono::duration_cast<std::chrono::seconds>(chrono::high_resolution_clock::now() - start_time);
+        int total_time = game_duration.count();
+        int minutes;
+        int seconds;
+        if(!paused) {
+            //enters if the game is NOT paused. This is the condition that keeps the timer from incrementing when paused.
+            //cout << "not paused\n";
+            total_time =  total_time - elapsed_paused_time; //
+            minutes = total_time / 60;
+            seconds = total_time % 60;
+        }
+        int minutes0 = minutes / 10 % 10; //minutes index 0
+        int minutes1 = minutes % 10; // minutes index 1
+        int seconds0 = seconds / 10 % 10; // seconds index 0
+        int seconds1 = seconds % 10; // seconds index 1
+
         /* draw everything to the window */
         gameWindow.clear(sf::Color::White);
-        gameWindow.draw(debug.new_sprite);
+
+        digitsMap[minutes0].setPosition((num_cols * 32) - 97, (32 * (num_rows + 0.5)) + 16);
+        gameWindow.draw(digitsMap[minutes0]);
+        digitsMap[minutes1].setPosition((num_cols * 32) - 97 + 21,  (32 * (num_rows + 0.5)) + 16);
+        gameWindow.draw(digitsMap[minutes1]);
+        digitsMap[seconds0].setPosition( (num_cols * 32) - 54,  (32 * (num_rows + 0.5)) + 16);
+        gameWindow.draw(digitsMap[seconds0]);
+        digitsMap[seconds1].setPosition((num_cols * 32) - 54 + 21, (32 * (num_rows + 0.5)) + 16);
+        gameWindow.draw(digitsMap[seconds1]);
         gameWindow.draw(pause.new_sprite);
+        if(paused && (game_state == 1)){
+            gameWindow.draw(play.new_sprite);
+        }
+
+        gameWindow.draw(debug.new_sprite);
         gameWindow.draw(leaderboard.new_sprite);
         gameWindow.draw(ones.new_sprite);
         gameWindow.draw(tenths.new_sprite);
         gameWindow.draw(hundreths.new_sprite);
-        gameWindow.draw(timerMinutes1.new_sprite);
-        gameWindow.draw(timerMinutes2.new_sprite);
-        gameWindow.draw(timerSeconds1.new_sprite);
-        gameWindow.draw(timerSeconds2.new_sprite);
+
         if(game_state == 1) {
             gameWindow.draw(face_happy.new_sprite);
         } else if (game_state == 0) {
