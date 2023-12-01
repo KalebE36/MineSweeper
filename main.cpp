@@ -12,7 +12,6 @@ void read_cfg(int &num_rows, int &num_cols, int& num_mines);
 bool WelcomeWindow(int& num_rows, int& num_cols, string& user_name, int& close_window);
 void revealAdjacentTiles(Tile& current_tile, sf::Texture& revealed_texture);
 map<int, sf::Sprite> timerDigits(sf::Sprite digits);
-void drawTimer(sf::RenderWindow& gameWindow);
 void GameWindow(int& num_rows, int& num_cols, int& num_mines, int& game_window, int& game_state);
 
 
@@ -180,10 +179,6 @@ map<int, sf::Sprite> timerDigits(sf::Sprite digits){
     }
 
     return digitsMap;
-}
-
-void drawTimer(sf::RenderWindow& gameWindow) {
-
 }
 
 void GameWindow(int& num_rows, int& num_cols, int& num_mines, int& game_window, int& game_state) {
