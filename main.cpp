@@ -156,14 +156,14 @@ void UpdateCounterSprites(Sprite& ones, Sprite& tenths, Sprite& hundreths, int n
 
 void revealAdjacentTiles(Tile& current_tile, sf::Texture& revealed_texture) {
     for(int i = 0; i < current_tile.adjacent_tiles.size(); i++) {
-        if((!current_tile.adjacent_tiles.at(i)->is_mine) && (!current_tile.adjacent_tiles.at(i)->is_revealed) && (current_tile.adjacent_tiles.at(i)->adjacentBombs() == 0) && (current_tile.adjacent_mines == 0)) {
-            current_tile.adjacent_tiles.at(i)->is_revealed = true;
-            current_tile.adjacent_tiles.at(i)->state.setTexture(revealed_texture);
-            revealAdjacentTiles(*current_tile.adjacent_tiles.at(i), revealed_texture);
+        if((!current_tile.adjacent_tiles.at(i)->is_flagged) && (!current_tile.adjacent_tiles.at(i)->is_mine) && (!current_tile.adjacent_tiles.at(i)->is_revealed) && (current_tile.adjacent_tiles.at(i)->adjacentBombs() == 0) && (current_tile.adjacent_mines == 0)) {
+                current_tile.adjacent_tiles.at(i)->is_revealed = true;
+                current_tile.adjacent_tiles.at(i)->state.setTexture(revealed_texture);
+                revealAdjacentTiles(*current_tile.adjacent_tiles.at(i), revealed_texture);
         }
-        if((current_tile.adjacent_tiles.at(i)->adjacentBombs() != 0) && (!current_tile.adjacent_tiles.at(i)->is_mine) && (!current_tile.adjacent_tiles.at(i)->is_revealed) && (current_tile.adjacent_mines == 0)) {
-            current_tile.adjacent_tiles.at(i)->is_revealed = true;
-            current_tile.adjacent_tiles.at(i)->state.setTexture(revealed_texture);
+        if((!current_tile.adjacent_tiles.at(i)->is_flagged) && (current_tile.adjacent_tiles.at(i)->adjacentBombs() != 0) && (!current_tile.adjacent_tiles.at(i)->is_mine) && (!current_tile.adjacent_tiles.at(i)->is_revealed) && (current_tile.adjacent_mines == 0)) {
+                current_tile.adjacent_tiles.at(i)->is_revealed = true;
+                current_tile.adjacent_tiles.at(i)->state.setTexture(revealed_texture);
         }
     }
 }
@@ -202,6 +202,7 @@ void GameWindow(int& num_rows, int& num_cols, int& num_mines, int& game_window, 
         /* Other Textures */
     sf::Texture digits_texture = TextureManager::getTexture("digits");
     sf::Texture happy_face = TextureManager::getTexture("face_happy");
+    sf::Texture win_face = TextureManager::getTexture("face_win");
     sf::Texture losing_face = TextureManager::getTexture("face_lose");
     sf::Texture debug_texture = TextureManager::getTexture("debug");
     sf::Texture pause_texture = TextureManager::getTexture("pause");
@@ -221,6 +222,7 @@ void GameWindow(int& num_rows, int& num_cols, int& num_mines, int& game_window, 
     /* Basic Sprite Declaration */
     Sprite face_happy(happy_face, num_cols, num_rows, ((num_cols/2.0f)* 32 ) - 32, 32 * (num_rows + 0.5));
     Sprite face_lose(losing_face, num_cols, num_rows, ((num_cols/2.0f)* 32 ) - 32, 32 * (num_rows + 0.5));
+    Sprite face_win(win_face, num_cols, num_rows, ((num_cols/2.0f)* 32 ) - 32, 32 * (num_rows + 0.5));
     Sprite debug(debug_texture, num_cols, num_rows, (num_cols * 32) - 304, 32 * (num_rows + 0.5));
     Sprite pause(pause_texture, num_cols, num_rows, (num_cols * 32) - 240, 32 * (num_rows + 0.5));
     Sprite play (play_texture, num_cols, num_rows, (num_cols * 32) - 240, 32 * (num_rows + 0.5));
@@ -389,6 +391,10 @@ void GameWindow(int& num_rows, int& num_cols, int& num_mines, int& game_window, 
 
     while(gameWindow.isOpen()) {
         sf::Event event;
+
+        if(game_state != 1) {
+            paused = true;
+        }
         while(gameWindow.pollEvent(event)) {
             if (event.type == sf::Event::Closed) {
                 gameWindow.close();
@@ -457,7 +463,6 @@ void GameWindow(int& num_rows, int& num_cols, int& num_mines, int& game_window, 
                                         for (int j = 0; j < num_cols; j++) {
                                             if(tiles[i][j]->is_mine) {
                                                 game_state = 0;
-                                                paused = true;
                                                 tiles[i][j]->updateRevealedTile(tile_revealed);
                                             }
                                         }
@@ -495,6 +500,25 @@ void GameWindow(int& num_rows, int& num_cols, int& num_mines, int& game_window, 
             }
 
         }
+        int mine_numFlag = 0;
+        int revealed_tile = 0;
+
+        if(game_state == 1) {
+            for (int i = 0; i < num_rows; i++) {
+                for (int j = 0; j < num_cols; j++) {
+                    if(tiles[i][j]->is_mine && tiles[i][j]->is_flagged) {
+                        mine_numFlag++;
+                    }
+                    if(tiles[i][j]->is_revealed && !tiles[i][j]->is_mine) {
+                        revealed_tile++;
+                    }
+                }
+            }
+        }
+
+        if((revealed_tile + mine_numFlag) == (num_rows * num_cols)) {
+            game_state = 2;
+        }
 
         auto game_duration = std::chrono::duration_cast<std::chrono::seconds>(chrono::high_resolution_clock::now() - start_time);
         int total_time = game_duration.count();
@@ -502,7 +526,6 @@ void GameWindow(int& num_rows, int& num_cols, int& num_mines, int& game_window, 
         int seconds;
         if(!paused) {
             //enters if the game is NOT paused. This is the condition that keeps the timer from incrementing when paused.
-            //cout << "not paused\n";
             total_time =  total_time - elapsed_paused_time; //
             minutes = total_time / 60;
             seconds = total_time % 60;
@@ -538,7 +561,10 @@ void GameWindow(int& num_rows, int& num_cols, int& num_mines, int& game_window, 
             gameWindow.draw(face_happy.new_sprite);
         } else if (game_state == 0) {
             gameWindow.draw(face_lose.new_sprite);
+        } else  {
+            gameWindow.draw(face_win.new_sprite);
         }
+
         for (int i = 0; i < num_rows; i++) {
             for (int j = 0; j < num_cols; j++) {
                 if(tiles[i][j]->is_mine && tiles[i][j]->is_revealed) {
