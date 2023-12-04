@@ -43,6 +43,14 @@ struct Tile {
         state.setTexture(revealed_texture);
     }
 
+    void fakeRevealedTile(sf::Texture& revealed_texture) {
+        state.setTexture(revealed_texture);
+    }
+
+    void restoreTile(sf::Texture& unrevealed_texture) {
+        state.setTexture(unrevealed_texture);
+    }
+
     int adjacentBombs() {
         int num_bombs = 0;
         for(int i = 0; i < adjacent_tiles.size(); i++) {

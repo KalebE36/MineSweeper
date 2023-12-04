@@ -5,6 +5,7 @@
 #include "TextureManager.h"
 #include "Sprite.h"
 #include "Tile.h"
+#include "Leaderboard.h"
 #include <SFML/Graphics.hpp>
 
 using namespace std;
@@ -12,7 +13,7 @@ void read_cfg(int &num_rows, int &num_cols, int& num_mines);
 bool WelcomeWindow(int& num_rows, int& num_cols, string& user_name, int& close_window);
 void revealAdjacentTiles(Tile& current_tile, sf::Texture& revealed_texture);
 map<int, sf::Sprite> timerDigits(sf::Sprite digits);
-void GameWindow(int& num_rows, int& num_cols, int& num_mines, int& game_window, int& game_state);
+void GameWindow(int& num_rows, int& num_cols, int& num_mines, int& game_window, int& game_state, string& user_name);
 
 
 int main() {
@@ -21,6 +22,8 @@ int main() {
     int close_window = 0;
     int game_window = 1;
     string user_name = "";
+    Leaderboard leaderboardStruct(user_name);
+
 
     /* Functions for welcome window and reading in the config */
     read_cfg(num_rows, num_cols, num_mines);
@@ -34,7 +37,7 @@ int main() {
     /* Run the Game Window and the actual game */
     int game_state;
     while(game_window == 1) {
-        GameWindow(num_rows, num_cols, num_mines, game_window, game_state);
+        GameWindow(num_rows, num_cols, num_mines, game_window, game_state, user_name);
     }
 
     return 0;
@@ -60,6 +63,7 @@ void read_cfg (int &num_rows, int &num_cols, int& num_mines) {
 bool WelcomeWindow(int& num_rows, int& num_cols, string& user_name, int& close_window) {
     int checknum = 0;
     int max_num = 0;
+    int num_flags = 0;
     sf::String welcome_input;
     sf::RenderWindow welcomeWindow(sf::VideoMode((num_cols * 32), ((num_rows*32) + 100)), "Minesweeper", sf::Style::Close);
 
@@ -181,9 +185,14 @@ map<int, sf::Sprite> timerDigits(sf::Sprite digits){
     return digitsMap;
 }
 
-void GameWindow(int& num_rows, int& num_cols, int& num_mines, int& game_window, int& game_state) {
+void GameWindow(int& num_rows, int& num_cols, int& num_mines, int& game_window, int& game_state, string& user_name) {
     game_state = 1;
     int updated_mines = num_mines;
+    int num_flags = 0;
+    Leaderboard leaderboardStruct(user_name);
+    bool game_leaderboard = false;
+    bool leaderboard_check = false;
+    bool pause_check = false;
     Tile* tiles[num_rows][num_cols];
     sf::RenderWindow gameWindow(sf::VideoMode((num_cols * 32), ((num_rows*32) + 100)), "Game Window", sf::Style::Close);
 
@@ -395,6 +404,8 @@ void GameWindow(int& num_rows, int& num_cols, int& num_mines, int& game_window, 
         if(game_state != 1) {
             paused = true;
         }
+
+
         while(gameWindow.pollEvent(event)) {
             if (event.type == sf::Event::Closed) {
                 gameWindow.close();
@@ -411,10 +422,23 @@ void GameWindow(int& num_rows, int& num_cols, int& num_mines, int& game_window, 
                                 if(paused) {
                                     cout << "paused" << endl;
                                     pause_time = chrono::high_resolution_clock::now();
-                                }else{
+                                    for (int i = 0; i < num_rows; i++) {
+                                        for (int j = 0; j < num_cols; j++) {
+                                            tiles[i][j]->fakeRevealedTile(tile_revealed);
+                                        }
+                                    }
+                                } else{
+                                    for (int i = 0; i < num_rows; i++) {
+                                        for (int j = 0; j < num_cols; j++) {
+                                            if(!tiles[i][j]->is_revealed) {
+                                                tiles[i][j]->restoreTile(tile_hidden);
+                                            }
+                                        }
+                                    }
                                     auto unPausedTime = chrono::steady_clock::now();
                                     elapsed_paused_time += chrono::duration_cast<chrono::seconds>(unPausedTime - pause_time).count(); //Addition is necessary for when hitting the pause button more than once
                                     //cout << elapsed_paused_time % 60 << " " << endl;
+                                    pause_check = false;
                                 }
                             }
                         }
@@ -424,28 +448,61 @@ void GameWindow(int& num_rows, int& num_cols, int& num_mines, int& game_window, 
                         if((mousepos.y <= (face_happy.new_sprite.getPosition().y + 64)) && (mousepos.y >= face_happy.new_sprite.getPosition().y)) {
                             /* Possibly fix this */
                             gameWindow.close();
-                            GameWindow(num_rows, num_cols, num_mines, game_window, game_state);
+                            GameWindow(num_rows, num_cols, num_mines, game_window, game_state, user_name);
                         }
                     }
 
                     /* Implement debug button */
                     if((mousepos.x <= (debug.new_sprite.getPosition().x + 64)) && (mousepos.x >= debug.new_sprite.getPosition().x)) {
                         if ((mousepos.y <= (debug.new_sprite.getPosition().y + 64)) && (mousepos.y >= debug.new_sprite.getPosition().y)) {
-                            for (int i = 0; i < num_rows; i++) {
-                                for (int j = 0; j < num_cols; j++) {
-                                    if((tiles[i][j]->is_mine) && (!tiles[i][j]->is_debug)) {
-                                        tiles[i][j]->is_debug = true;
-                                        tiles[i][j]->is_revealed = true;
-                                    } else if((tiles[i][j]->is_mine) && (tiles[i][j]->is_debug)) {
-                                        tiles[i][j]->is_debug = false;
-                                        tiles[i][j]->is_revealed = false;
-                                    } else {}
+                            if(!paused) {
+                                for (int i = 0; i < num_rows; i++) {
+                                    for (int j = 0; j < num_cols; j++) {
+                                        if((tiles[i][j]->is_mine) && (!tiles[i][j]->is_debug)) {
+                                            tiles[i][j]->is_debug = true;
+                                            tiles[i][j]->is_revealed = true;
+                                        } else if((tiles[i][j]->is_mine) && (tiles[i][j]->is_debug)) {
+                                            tiles[i][j]->is_debug = false;
+                                            tiles[i][j]->is_revealed = false;
+                                        } else {}
+                                    }
                                 }
                             }
                         }
                     }
 
-                    /* Variables that allow for comparing to the tile number */
+                    /* Leaderboard button */
+                    if((mousepos.x <= (leaderboard.new_sprite.getPosition().x + 64)) && (mousepos.x >= leaderboard.new_sprite.getPosition().x)) {
+                        if ((mousepos.y <= (leaderboard.new_sprite.getPosition().y + 64)) && (mousepos.y >= leaderboard.new_sprite.getPosition().y)) {
+                            if(paused) {
+                                if(game_state == 1 ) {
+                                    pause_check = true;
+                                }
+                                if(game_state != 2) {
+                                    for (int i = 0; i < num_rows; i++) {
+                                        for (int j = 0; j < num_cols; j++) {
+                                            tiles[i][j]->fakeRevealedTile(tile_revealed);
+                                        }
+                                    }
+                                }
+                                leaderboard_check = true;
+                            } else {
+                                paused = true;
+                                pause_time = chrono::high_resolution_clock::now();
+                                if(game_state == 1) {
+                                    for (int i = 0; i < num_rows; i++) {
+                                        for (int j = 0; j < num_cols; j++) {
+                                            tiles[i][j]->fakeRevealedTile(tile_revealed);
+                                        }
+                                    }
+                                }
+                                leaderboard_check = true;
+                            }
+                        }
+                    }
+
+
+                            /* Variables that allow for comparing to the tile number */
                     int tile_xVal = mousepos.x / 32;
                     int tile_yVal = mousepos.y / 32;
                     int num_tiles = tile_xVal + (tile_yVal * num_cols);
@@ -486,10 +543,12 @@ void GameWindow(int& num_rows, int& num_cols, int& num_mines, int& game_window, 
                                      if(tiles[i][j]->is_flagged) {
                                          tiles[i][j]->is_flagged = false;
                                          updated_mines++;
+                                         num_flags--;
                                          UpdateCounterSprites(ones, tenths, hundreths, updated_mines);
-                                     } else {
+                                     } else if(num_flags != num_mines) {
                                          tiles[i][j]->is_flagged = true;
                                          updated_mines--;
+                                         num_flags++;
                                          UpdateCounterSprites(ones, tenths, hundreths, updated_mines);
                                      }
                                  }
@@ -500,15 +559,11 @@ void GameWindow(int& num_rows, int& num_cols, int& num_mines, int& game_window, 
             }
 
         }
-        int mine_numFlag = 0;
         int revealed_tile = 0;
 
         if(game_state == 1) {
             for (int i = 0; i < num_rows; i++) {
                 for (int j = 0; j < num_cols; j++) {
-                    if(tiles[i][j]->is_mine && tiles[i][j]->is_flagged) {
-                        mine_numFlag++;
-                    }
                     if(tiles[i][j]->is_revealed && !tiles[i][j]->is_mine) {
                         revealed_tile++;
                     }
@@ -516,9 +571,13 @@ void GameWindow(int& num_rows, int& num_cols, int& num_mines, int& game_window, 
             }
         }
 
-        if((revealed_tile + mine_numFlag) == (num_rows * num_cols)) {
+        if(((num_rows * num_cols) - num_mines) == revealed_tile) {
+            updated_mines = 0;
+            UpdateCounterSprites(ones, tenths, hundreths, updated_mines);
             game_state = 2;
+            game_leaderboard = true;
         }
+
 
         auto game_duration = std::chrono::duration_cast<std::chrono::seconds>(chrono::high_resolution_clock::now() - start_time);
         int total_time = game_duration.count();
@@ -536,6 +595,7 @@ void GameWindow(int& num_rows, int& num_cols, int& num_mines, int& game_window, 
         int seconds1 = seconds % 10; // seconds index 1
 
         /* draw everything to the window */
+
         gameWindow.clear(sf::Color::White);
 
         digitsMap[minutes0].setPosition((num_cols * 32) - 97, (32 * (num_rows + 0.5)) + 16);
@@ -547,16 +607,47 @@ void GameWindow(int& num_rows, int& num_cols, int& num_mines, int& game_window, 
         digitsMap[seconds1].setPosition((num_cols * 32) - 54 + 21, (32 * (num_rows + 0.5)) + 16);
         gameWindow.draw(digitsMap[seconds1]);
         gameWindow.draw(pause.new_sprite);
-        if(paused && (game_state == 1)){
-            gameWindow.draw(play.new_sprite);
-        }
-
         gameWindow.draw(debug.new_sprite);
         gameWindow.draw(leaderboard.new_sprite);
         gameWindow.draw(ones.new_sprite);
         gameWindow.draw(tenths.new_sprite);
         gameWindow.draw(hundreths.new_sprite);
-
+        for (int i = 0; i < num_rows; i++) {
+            for (int j = 0; j < num_cols; j++) {
+                if (game_state == 2) {
+                    if (!tiles[i][j]->is_flagged && !tiles[i][j]->is_revealed) {
+                        gameWindow.draw(tiles[i][j]->state);
+                        gameWindow.draw(tiles[i][j]->flag_sprite);
+                    } else if (!tiles[i][j]->is_flagged && tiles[i][j]->is_revealed) {
+                        gameWindow.draw(tiles[i][j]->state);
+                        gameWindow.draw(tiles[i][j]->number_sprite);
+                    } else if(tiles[i][j]->is_flagged && !tiles[i][j]->is_revealed) {
+                        gameWindow.draw(tiles[i][j]->state);
+                        gameWindow.draw(tiles[i][j]->flag_sprite);
+                    }
+                } else {
+                    if (tiles[i][j]->is_mine && tiles[i][j]->is_revealed && !leaderboard_check) {
+                        gameWindow.draw(tiles[i][j]->state);
+                        gameWindow.draw(tiles[i][j]->mine_sprite);
+                    } else if ((tiles[i][j]->is_flagged && !leaderboard_check && !paused) || (tiles[i][j]->is_flagged && !leaderboard_check && game_state == 0)) {
+                    gameWindow.draw(tiles[i][j]->state);
+                    gameWindow.draw(tiles[i][j]->flag_sprite);
+                    } else if ((tiles[i][j]->is_flagged && tiles[i][j]->is_debug && !leaderboard_check && !paused) || (tiles[i][j]->is_flagged && tiles[i][j]->is_debug && !leaderboard_check && game_state == 0)) {
+                    gameWindow.draw(tiles[i][j]->state);
+                    gameWindow.draw(tiles[i][j]->flag_sprite);
+                    gameWindow.draw(tiles[i][j]->mine_sprite);
+                    } else if ((tiles[i][j]->is_revealed && !leaderboard_check && !paused) || (tiles[i][j]->is_revealed && !leaderboard_check && game_state == 0)) {
+                    gameWindow.draw(tiles[i][j]->state);
+                    gameWindow.draw(tiles[i][j]->number_sprite);
+                    } else if (game_state != 2) {
+                    gameWindow.draw(tiles[i][j]->state);
+                    }
+                }
+            }
+        }
+        if(paused && (game_state == 1) && !leaderboard_check || pause_check){
+            gameWindow.draw(play.new_sprite);
+        }
         if(game_state == 1) {
             gameWindow.draw(face_happy.new_sprite);
         } else if (game_state == 0) {
@@ -564,30 +655,31 @@ void GameWindow(int& num_rows, int& num_cols, int& num_mines, int& game_window, 
         } else  {
             gameWindow.draw(face_win.new_sprite);
         }
+        gameWindow.display();
 
-        for (int i = 0; i < num_rows; i++) {
-            for (int j = 0; j < num_cols; j++) {
-                if(tiles[i][j]->is_mine && tiles[i][j]->is_revealed) {
-                    gameWindow.draw(tiles[i][j]->state);
-                    gameWindow.draw(tiles[i][j]->mine_sprite);
-                } else if (tiles[i][j]->is_flagged) {
-                    gameWindow.draw(tiles[i][j]->state);
-                    gameWindow.draw(tiles[i][j]->flag_sprite);
-                } else if (tiles[i][j]->is_flagged && tiles[i][j]->is_debug) {
-                    gameWindow.draw(tiles[i][j]->state);
-                    gameWindow.draw(tiles[i][j]->flag_sprite);
-                    gameWindow.draw(tiles[i][j]->mine_sprite);
-                } else if (tiles[i][j]->is_revealed) {
-                    gameWindow.draw(tiles[i][j]->state);
-                    gameWindow.draw(tiles[i][j]->number_sprite);
-                }  else {
-                    gameWindow.draw(tiles[i][j]->state);
+        if(game_state == 2 && game_leaderboard) {
+            leaderboardStruct.displayLeaderWindow(num_cols, num_rows, leaderboard_check);
+            game_leaderboard = false;
+        }
+
+
+        if(leaderboard_check) {
+            leaderboardStruct.displayLeaderWindow(num_cols, num_rows, leaderboard_check);
+            if(!pause_check) {
+                paused = false;
+                auto unPausedTime = chrono::steady_clock::now();
+                elapsed_paused_time += chrono::duration_cast<chrono::seconds>(unPausedTime - pause_time).count();
+                for (int i = 0; i < num_rows; i++) {
+                    for (int j = 0; j < num_cols; j++) {
+                        if(!tiles[i][j]->is_revealed) {
+                            tiles[i][j]->restoreTile(tile_hidden);
+                        }
+                    }
                 }
             }
         }
-        gameWindow.display();
-    }
 
+    }
 }
 
 
