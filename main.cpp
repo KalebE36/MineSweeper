@@ -578,11 +578,12 @@ void GameWindow(int& num_rows, int& num_cols, int& num_mines, int& game_window, 
             game_leaderboard = true;
         }
 
-
+        
         auto game_duration = std::chrono::duration_cast<std::chrono::seconds>(chrono::high_resolution_clock::now() - start_time);
         int total_time = game_duration.count();
         int minutes;
         int seconds;
+
         if(!paused) {
             //enters if the game is NOT paused. This is the condition that keeps the timer from incrementing when paused.
             total_time =  total_time - elapsed_paused_time; //
@@ -658,13 +659,13 @@ void GameWindow(int& num_rows, int& num_cols, int& num_mines, int& game_window, 
         gameWindow.display();
 
         if(game_state == 2 && game_leaderboard) {
-            leaderboardStruct.displayLeaderWindow(num_cols, num_rows, leaderboard_check);
+            leaderboardStruct.displayLeaderWindow(num_cols, num_rows, leaderboard_check, game_state);
             game_leaderboard = false;
         }
 
 
         if(leaderboard_check) {
-            leaderboardStruct.displayLeaderWindow(num_cols, num_rows, leaderboard_check);
+            leaderboardStruct.displayLeaderWindow(num_cols, num_rows, leaderboard_check, game_state);
             if(!pause_check) {
                 paused = false;
                 auto unPausedTime = chrono::steady_clock::now();
