@@ -77,7 +77,20 @@ struct Leaderboard {
     }
 
     void writeTextFile(string& info, float& time) {
-        fstream stream("files/leaderboard.txt", ios_base::out);
+        readTextFile();
+        int replace_index = 0;
+        for (int i = 0; i < time_values.size(); i++) {
+            if (time_values.at(i) >= time) {
+                replace_index = i;
+                break;
+            }
+        }
+        
+        time_values.insert(time_values.begin() + replace_index, time);
+        for(int i = 0; i < time_values.size(); i++) {
+            cout << time_values.at(i) << endl;
+        }
+
     }
 
     void displayLeaderWindow(int& num_cols, int& num_rows, bool& leaderboard_check, int& game_state) {

@@ -606,10 +606,10 @@ void GameWindow(int& num_rows, int& num_cols, int& num_mines, int& game_window, 
             game_leaderboard = true;
             string time = to_string(minutes0) + to_string(minutes1) + ":" + to_string(seconds0) + to_string(seconds1);
             string info = time + ", " + user_name;
-            user_time = stof(time);
-            cout << user_time << endl; 
-
-
+            string temp_time = time;
+            replace(temp_time.begin(), temp_time.end(), ':', '.');
+            user_time = stof(temp_time);
+            leaderboardStruct.writeTextFile(info, user_time);
         }
 
         /* Draw everything to the window */
