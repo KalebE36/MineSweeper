@@ -15,7 +15,6 @@ void revealAdjacentTiles(Tile& current_tile, sf::Texture& revealed_texture);
 map<int, sf::Sprite> timerDigits(sf::Sprite digits);
 void GameWindow(int& num_rows, int& num_cols, int& num_mines, int& game_window, int& game_state, string& user_name);
 
-// Test
 int main() {
     /* Special Variables */
     int num_rows, num_cols, num_mines;
