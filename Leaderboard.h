@@ -11,9 +11,8 @@
 using namespace std;
 
 struct Leaderboard {
-    string time;
     string user_name;
-    vector<string> time_strings;
+    string formatted_string;
     vector<float> time_values;
 
     Leaderboard() {}
@@ -22,6 +21,23 @@ struct Leaderboard {
         this->user_name = user_name;
     }
 
+
+    void formatString(string file_content) {
+        stringstream ss(file_content);
+        string display_string;
+
+        while (getline(ss, display_string, '\n')) {
+            // Add a tab character between each value in a row
+            size_t pos = display_string.find(',');
+            while (pos != string::npos) {
+                display_string.replace(pos, 1, "\t");
+                pos = display_string.find(',', pos + 1);
+            }
+
+            // Separate rows by two newline characters
+            formatted_string += display_string + "\n\n";
+        }
+    }
 
     void readTextFile() {
         // Open the file "leaderboard.txt" for reading
@@ -34,25 +50,29 @@ struct Leaderboard {
         }
 
         string value;
-        time_strings.clear();
+        time_values.clear();
+        /* reads in the entire file */
+        stringstream buffer;
+        buffer << stream.rdbuf();
+        string file_content = buffer.str();
+
+
+        stringstream ss(file_content);
+        string new_line;
         time_values.clear();
 
-
-        while (getline(stream, value)) {
-            stringstream ss(value);
+        // Process each line in the file content
+        while (getline(ss, new_line)) {
+            stringstream lineStream(new_line);
             string timeStr, name;
-            getline(ss, timeStr, ',');
+            getline(lineStream, timeStr, ',');
             replace(timeStr.begin(), timeStr.end(), ':', '.');
 
             float time = stof(timeStr); // Convert time string to float
-            getline(ss, name);
-
-            // Store the entire time string and the time value separately
-            time_strings.push_back(value);
             time_values.push_back(time);
-
-            cout << "Time: " << time << ", Name: " << name << endl;
         }
+
+        formatString(file_content);
 
         stream.close();
     }
@@ -62,11 +82,14 @@ struct Leaderboard {
     }
 
     void displayLeaderWindow(int& num_cols, int& num_rows, bool& leaderboard_check, int& game_state) {
+        readTextFile();
         sf::RenderWindow leaderboardWindow(sf::VideoMode((num_cols * 16), ((num_rows * 16) + 50)), "Leaderboard Window",sf::Style::Close);
         Text leaderboard_text(20,  "files/font.ttf", "LEADERBOARD");
+        Text records(20, "files/font.ttf", formatted_string);
         leaderboard_text.new_text.setStyle(sf::Text::Underlined | sf::Text::Bold);
         leaderboard_text.setText(leaderboard_text.new_text, ((num_cols*16)/2.0f), ((((num_rows*16) + 100))/2.0f) - 120);
-        readTextFile();
+        records.new_text.setStyle(sf::Text::Bold);
+        records.setText(records.new_text, ((num_cols*16)/2.0f), ((((num_rows*16) + 100))/2.0f) + 20);
 
         while (leaderboardWindow.isOpen()) {
             sf::Event event;
@@ -79,6 +102,7 @@ struct Leaderboard {
             }
             leaderboardWindow.clear(sf::Color::Blue);
             leaderboardWindow.draw(leaderboard_text.new_text);
+            leaderboardWindow.draw(records.new_text);
             leaderboardWindow.display();
         }
     }
