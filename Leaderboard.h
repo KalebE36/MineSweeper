@@ -13,34 +13,38 @@ using namespace std;
 struct Leaderboard {
     string user_name;
     string formatted_string;
+    bool recent;
     vector<float> time_values;
 
     Leaderboard() {}
 
     Leaderboard(string& user_name) {
         this->user_name = user_name;
+        recent = false;
     }
 
 
-    void formatString(string& file_content) {
+    void formatString(string& file_content, bool& recent) {
         formatted_string = "";
         stringstream ss(file_content);
         string display_string;
-        int lineNumber = 1;
+        int line_number = 1;
         int max_lines = 5;
 
+        /* Breaks up the one string that contains each records name and time in the txt file */
         while (getline(ss, display_string, '\n')) {
-            if (lineNumber > max_lines) {
+            if (line_number > max_lines) {
                 break;
             }
-            display_string = to_string(lineNumber++) + "." + "\t" + display_string;
+            display_string = to_string(line_number++) + "." + "\t" + display_string;
             int pos = display_string.find(',');
             while (pos != string::npos) {
                 display_string.replace(pos, 1, "\t");
                 pos = display_string.find(',', pos + 1);
             }
 
-            formatted_string += display_string + "\n\n";
+            formatted_string += display_string + (recent ? "*" : "") + "\n\n";
+            recent = false;
         }
     }
 
@@ -53,8 +57,6 @@ struct Leaderboard {
         }
 
         string value;
-        time_values.clear();
-
         /* reads in the entire file */
         stringstream buffer;
         buffer << stream.rdbuf();
@@ -75,24 +77,42 @@ struct Leaderboard {
             time_values.push_back(time);
         }
 
-        formatString(file_content);
+        formatString(file_content, recent);
 
         stream.close();
     }
 
     void writeTextFile(string& info, float& time) {
-        readTextFile();
+        fstream stream("files/leaderboard.txt", ios_base::in);
+        stringstream buffer;
+        buffer << stream.rdbuf();
+        string new_content = buffer.str();
+        stringstream ss( new_content);
+        string temp_line;
+        time_values.clear();
+        while (getline(ss, temp_line)) {
+            stringstream line_stream(temp_line);
+            string time_string, name;
+            getline(line_stream, time_string, ',');
+            replace(time_string.begin(), time_string.end(), ':', '.');
+
+            float time = stof(time_string);
+            time_values.push_back(time);
+        }
+        stream.close();
+
         int replace_index = 0;
         for (int i = 0; i < time_values.size(); i++) {
             if (time_values.at(i) >= time) {
                 replace_index = i;
+                recent = true;
                 break;
             }
         }
-
         time_values.insert(time_values.begin() + replace_index, time);
 
-        fstream stream("files/leaderboard.txt", ios_base::in);
+
+        stream.open("files/leaderboard.txt", ios_base::in);
         vector<string> file_content;
         string new_line;
         while (getline(stream, new_line)) {
