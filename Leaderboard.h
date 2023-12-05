@@ -23,34 +23,34 @@ struct Leaderboard {
 
 
     void formatString(string file_content) {
+        formatted_string = ""; 
         stringstream ss(file_content);
         string display_string;
+        int lineNumber = 1;
 
         while (getline(ss, display_string, '\n')) {
-            // Add a tab character between each value in a row
-            size_t pos = display_string.find(',');
+            display_string = to_string(lineNumber++) + "\t" + display_string;
+            auto pos = display_string.find(',');
             while (pos != string::npos) {
                 display_string.replace(pos, 1, "\t");
                 pos = display_string.find(',', pos + 1);
             }
 
-            // Separate rows by two newline characters
             formatted_string += display_string + "\n\n";
         }
     }
 
     void readTextFile() {
-        // Open the file "leaderboard.txt" for reading
         fstream stream("files/leaderboard.txt", ios_base::in);
 
-        // Check if the file is successfully opened
         if (!stream.is_open()) {
-            cerr << "Error opening file!" << endl;
+            cout << "Error opening file!" << endl;
             return;
         }
 
         string value;
         time_values.clear();
+
         /* reads in the entire file */
         stringstream buffer;
         buffer << stream.rdbuf();
@@ -61,14 +61,13 @@ struct Leaderboard {
         string new_line;
         time_values.clear();
 
-        // Process each line in the file content
         while (getline(ss, new_line)) {
-            stringstream lineStream(new_line);
-            string timeStr, name;
-            getline(lineStream, timeStr, ',');
-            replace(timeStr.begin(), timeStr.end(), ':', '.');
+            stringstream line_stream(new_line);
+            string time_string, name;
+            getline(line_stream, time_string, ',');
+            replace(time_string.begin(), time_string.end(), ':', '.');
 
-            float time = stof(timeStr); // Convert time string to float
+            float time = stof(time_string); // Convert time string to float
             time_values.push_back(time);
         }
 
