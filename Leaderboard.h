@@ -22,15 +22,19 @@ struct Leaderboard {
     }
 
 
-    void formatString(string file_content) {
+    void formatString(string& file_content) {
         formatted_string = "";
         stringstream ss(file_content);
         string display_string;
         int lineNumber = 1;
+        int max_lines = 5;
 
         while (getline(ss, display_string, '\n')) {
-            display_string = to_string(lineNumber++) + "\t" + display_string;
-            auto pos = display_string.find(',');
+            if (lineNumber > max_lines) {
+                break;
+            }
+            display_string = to_string(lineNumber++) + "." + "\t" + display_string;
+            int pos = display_string.find(',');
             while (pos != string::npos) {
                 display_string.replace(pos, 1, "\t");
                 pos = display_string.find(',', pos + 1);
@@ -67,7 +71,7 @@ struct Leaderboard {
             getline(line_stream, time_string, ',');
             replace(time_string.begin(), time_string.end(), ':', '.');
 
-            float time = stof(time_string); // Convert time string to float
+            float time = stof(time_string);
             time_values.push_back(time);
         }
 
@@ -87,20 +91,24 @@ struct Leaderboard {
         }
 
         time_values.insert(time_values.begin() + replace_index, time);
-        for(int i = 0; i < time_values.size(); i++) {
-            cout << time_values.at(i) << endl;
-        }
 
-        fstream stream("files/leaderboard.txt", ios_base::out | ios_base::in);
+        fstream stream("files/leaderboard.txt", ios_base::in);
+        vector<string> file_content;
         string new_line;
-        for(int i = 0; i < time_values.size(); i++) {
-            getline(stream, new_line);
+        while (getline(stream, new_line)) {
+            file_content.push_back(new_line);
+        }
+        stream.close();
+
+
+        stream.open("files/leaderboard.txt", ios_base::out | ios_base::trunc);
+        for (int i = 0; i < file_content.size(); i++) {
             if (i == replace_index) {
                 stream << info << '\n';
             }
-
-            stream << new_line << '\n';
+            stream << file_content.at(i) << '\n';
         }
+        stream.close();
 
     }
 
