@@ -578,7 +578,7 @@ void GameWindow(int& num_rows, int& num_cols, int& num_mines, int& game_window, 
             game_leaderboard = true;
         }
 
-        
+
         auto game_duration = std::chrono::duration_cast<std::chrono::seconds>(chrono::high_resolution_clock::now() - start_time);
         int total_time = game_duration.count();
         int minutes;

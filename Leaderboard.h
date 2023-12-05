@@ -13,7 +13,8 @@ using namespace std;
 struct Leaderboard {
     string time;
     string user_name;
-    vector<pair<float, string>> leaderboard_storage;
+    vector<string> time_strings;
+    vector<float> time_values;
 
     Leaderboard() {}
 
@@ -33,21 +34,24 @@ struct Leaderboard {
         }
 
         string value;
-        leaderboard_storage.clear();
+        time_strings.clear();
+        time_values.clear();
+
 
         while (getline(stream, value)) {
-
             stringstream ss(value);
             string timeStr, name;
             getline(ss, timeStr, ',');
             replace(timeStr.begin(), timeStr.end(), ':', '.');
 
-            float time = stof(timeStr); // Convert time string to integer
+            float time = stof(timeStr); // Convert time string to float
             getline(ss, name);
+
+            // Store the entire time string and the time value separately
+            time_strings.push_back(value);
+            time_values.push_back(time);
+
             cout << "Time: " << time << ", Name: " << name << endl;
-
-            leaderboard_storage.push_back(make_pair(time, name));
-
         }
 
         stream.close();
@@ -62,7 +66,6 @@ struct Leaderboard {
         Text leaderboard_text(20,  "files/font.ttf", "LEADERBOARD");
         leaderboard_text.new_text.setStyle(sf::Text::Underlined | sf::Text::Bold);
         leaderboard_text.setText(leaderboard_text.new_text, ((num_cols*16)/2.0f), ((((num_rows*16) + 100))/2.0f) - 120);
-        int record1, record2, record3, record4, record5;
         readTextFile();
 
         while (leaderboardWindow.isOpen()) {
