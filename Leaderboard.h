@@ -23,7 +23,7 @@ struct Leaderboard {
 
 
     void formatString(string file_content) {
-        formatted_string = ""; 
+        formatted_string = "";
         stringstream ss(file_content);
         string display_string;
         int lineNumber = 1;
@@ -76,7 +76,7 @@ struct Leaderboard {
         stream.close();
     }
 
-    void writeTextFile() {
+    void writeTextFile(string& info, float& time) {
         fstream stream("files/leaderboard.txt", ios_base::out);
     }
 

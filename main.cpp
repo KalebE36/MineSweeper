@@ -570,13 +570,16 @@ void GameWindow(int& num_rows, int& num_cols, int& num_mines, int& game_window, 
                 }
             }
         }
-
+        /*
         if(((num_rows * num_cols) - num_mines) == revealed_tile) {
             updated_mines = 0;
             UpdateCounterSprites(ones, tenths, hundreths, updated_mines);
             game_state = 2;
             game_leaderboard = true;
+            string time = to_string(total_time);
+            string info;
         }
+         */
 
 
         auto game_duration = std::chrono::duration_cast<std::chrono::seconds>(chrono::high_resolution_clock::now() - start_time);
@@ -595,7 +598,21 @@ void GameWindow(int& num_rows, int& num_cols, int& num_mines, int& game_window, 
         int seconds0 = seconds / 10 % 10; // seconds index 0
         int seconds1 = seconds % 10; // seconds index 1
 
-        /* draw everything to the window */
+        if(((num_rows * num_cols) - num_mines) == revealed_tile) {
+            float user_time = 0;
+            updated_mines = 0;
+            UpdateCounterSprites(ones, tenths, hundreths, updated_mines);
+            game_state = 2;
+            game_leaderboard = true;
+            string time = to_string(minutes0) + to_string(minutes1) + ":" + to_string(seconds0) + to_string(seconds1);
+            string info = time + ", " + user_name;
+            user_time = stof(time);
+            cout << user_time << endl; 
+
+
+        }
+
+        /* Draw everything to the window */
 
         gameWindow.clear(sf::Color::White);
 
