@@ -14,6 +14,7 @@ struct Leaderboard {
     string user_name;
     string formatted_string;
     bool recent;
+    int index_line;
     vector<float> time_values;
 
     Leaderboard() {}
@@ -21,6 +22,7 @@ struct Leaderboard {
     Leaderboard(string& user_name) {
         this->user_name = user_name;
         recent = false;
+        index_line = 99999999999;
     }
 
 
@@ -36,16 +38,20 @@ struct Leaderboard {
             if (line_number > max_lines) {
                 break;
             }
-            display_string = to_string(line_number++) + "." + "\t" + display_string;
+            if(line_number == index_line + 1) {
+                display_string = to_string(line_number++) + "." + "\t" + display_string + "*";
+            } else {
+                display_string = to_string(line_number++) + "." + "\t" + display_string;
+            }
             int pos = display_string.find(',');
             while (pos != string::npos) {
                 display_string.replace(pos, 1, "\t");
                 pos = display_string.find(',', pos + 1);
             }
 
-            formatted_string += display_string + (recent ? "*" : "") + "\n\n";
-            recent = false;
+            formatted_string += display_string + "\n\n";
         }
+        index_line = 99999999999;
     }
 
     void readTextFile() {
@@ -83,6 +89,7 @@ struct Leaderboard {
     }
 
     void writeTextFile(string& info, float& time) {
+        index_line = 9999999999999;
         fstream stream("files/leaderboard.txt", ios_base::in);
         stringstream buffer;
         buffer << stream.rdbuf();
@@ -105,12 +112,11 @@ struct Leaderboard {
         for (int i = 0; i < time_values.size(); i++) {
             if (time_values.at(i) >= time) {
                 replace_index = i;
-                recent = true;
                 break;
             }
         }
         time_values.insert(time_values.begin() + replace_index, time);
-
+        index_line = replace_index;
 
         stream.open("files/leaderboard.txt", ios_base::in);
         vector<string> file_content;
