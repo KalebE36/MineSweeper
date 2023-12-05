@@ -85,10 +85,21 @@ struct Leaderboard {
                 break;
             }
         }
-        
+
         time_values.insert(time_values.begin() + replace_index, time);
         for(int i = 0; i < time_values.size(); i++) {
             cout << time_values.at(i) << endl;
+        }
+
+        fstream stream("files/leaderboard.txt", ios_base::out | ios_base::in);
+        string new_line;
+        for(int i = 0; i < time_values.size(); i++) {
+            getline(stream, new_line);
+            if (i == replace_index) {
+                stream << info << '\n';
+            }
+
+            stream << new_line << '\n';
         }
 
     }

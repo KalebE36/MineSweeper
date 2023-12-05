@@ -570,16 +570,7 @@ void GameWindow(int& num_rows, int& num_cols, int& num_mines, int& game_window, 
                 }
             }
         }
-        /*
-        if(((num_rows * num_cols) - num_mines) == revealed_tile) {
-            updated_mines = 0;
-            UpdateCounterSprites(ones, tenths, hundreths, updated_mines);
-            game_state = 2;
-            game_leaderboard = true;
-            string time = to_string(total_time);
-            string info;
-        }
-         */
+
 
 
         auto game_duration = std::chrono::duration_cast<std::chrono::seconds>(chrono::high_resolution_clock::now() - start_time);
