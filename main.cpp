@@ -460,9 +460,11 @@ void GameWindow(int& num_rows, int& num_cols, int& num_mines, int& game_window, 
                                         if((tiles[i][j]->is_mine) && (!tiles[i][j]->is_debug)) {
                                             tiles[i][j]->is_debug = true;
                                             tiles[i][j]->is_revealed = true;
+                                            tiles[i][j]->fakeRevealedTile(tile_revealed);
                                         } else if((tiles[i][j]->is_mine) && (tiles[i][j]->is_debug)) {
                                             tiles[i][j]->is_debug = false;
                                             tiles[i][j]->is_revealed = false;
+                                            tiles[i][j]->restoreTile(tile_hidden);
                                         } else {}
                                     }
                                 }
@@ -623,13 +625,19 @@ void GameWindow(int& num_rows, int& num_cols, int& num_mines, int& game_window, 
         for (int i = 0; i < num_rows; i++) {
             for (int j = 0; j < num_cols; j++) {
                 if (game_state == 2) {
-                    if (!tiles[i][j]->is_flagged && !tiles[i][j]->is_revealed) {
+                    if(tiles[i][j]->is_debug) {
+                        tiles[i][j]->restoreTile(tile_hidden);
+                    }
+                    if (!tiles[i][j]->is_flagged && !tiles[i][j]->is_revealed ) {
                         gameWindow.draw(tiles[i][j]->state);
                         gameWindow.draw(tiles[i][j]->flag_sprite);
-                    } else if (!tiles[i][j]->is_flagged && tiles[i][j]->is_revealed) {
+                    } else if (!tiles[i][j]->is_flagged && tiles[i][j]->is_revealed && !tiles[i][j]->is_debug) {
                         gameWindow.draw(tiles[i][j]->state);
                         gameWindow.draw(tiles[i][j]->number_sprite);
                     } else if(tiles[i][j]->is_flagged && !tiles[i][j]->is_revealed) {
+                        gameWindow.draw(tiles[i][j]->state);
+                        gameWindow.draw(tiles[i][j]->flag_sprite);
+                    } else if (!tiles[i][j]->is_flagged && tiles[i][j]->is_revealed && tiles[i][j]->is_debug) {
                         gameWindow.draw(tiles[i][j]->state);
                         gameWindow.draw(tiles[i][j]->flag_sprite);
                     }
@@ -638,17 +646,17 @@ void GameWindow(int& num_rows, int& num_cols, int& num_mines, int& game_window, 
                         gameWindow.draw(tiles[i][j]->state);
                         gameWindow.draw(tiles[i][j]->mine_sprite);
                     } else if ((tiles[i][j]->is_flagged && !leaderboard_check && !paused) || (tiles[i][j]->is_flagged && !leaderboard_check && game_state == 0)) {
-                    gameWindow.draw(tiles[i][j]->state);
-                    gameWindow.draw(tiles[i][j]->flag_sprite);
+                        gameWindow.draw(tiles[i][j]->state);
+                        gameWindow.draw(tiles[i][j]->flag_sprite);
                     } else if ((tiles[i][j]->is_flagged && tiles[i][j]->is_debug && !leaderboard_check && !paused) || (tiles[i][j]->is_flagged && tiles[i][j]->is_debug && !leaderboard_check && game_state == 0)) {
-                    gameWindow.draw(tiles[i][j]->state);
-                    gameWindow.draw(tiles[i][j]->flag_sprite);
-                    gameWindow.draw(tiles[i][j]->mine_sprite);
+                        gameWindow.draw(tiles[i][j]->state);
+                        gameWindow.draw(tiles[i][j]->flag_sprite);
+                        gameWindow.draw(tiles[i][j]->mine_sprite);
                     } else if ((tiles[i][j]->is_revealed && !leaderboard_check && !paused) || (tiles[i][j]->is_revealed && !leaderboard_check && game_state == 0)) {
-                    gameWindow.draw(tiles[i][j]->state);
-                    gameWindow.draw(tiles[i][j]->number_sprite);
+                        gameWindow.draw(tiles[i][j]->state);
+                        gameWindow.draw(tiles[i][j]->number_sprite);
                     } else if (game_state != 2) {
-                    gameWindow.draw(tiles[i][j]->state);
+                        gameWindow.draw(tiles[i][j]->state);
                     }
                 }
             }
